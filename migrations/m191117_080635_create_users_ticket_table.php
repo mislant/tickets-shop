@@ -4,8 +4,12 @@ use yii\db\Migration;
 
 /**
  * Handles the creation of table `{{%users_ticket}}`.
+ * Has foreign keys to the tables:
+ *
+ * - `{{%user}}`
+ * - `{{%ticket}}`
  */
-class m191111_144808_create_users_ticket_table extends Migration
+class m191117_080635_create_users_ticket_table extends Migration
 {
     /**
      * {@inheritdoc}
@@ -14,23 +18,23 @@ class m191111_144808_create_users_ticket_table extends Migration
     {
         $this->createTable('{{%users_ticket}}', [
             'id' => $this->primaryKey(),
-            'users_id' => $this->integer()->notNull(),
+            'user_id' => $this->integer()->notNull(),
             'ticket_id' => $this->integer()->notNull(),
         ]);
 
-        // creates index for column `users_id`
+        // creates index for column `user_id`
         $this->createIndex(
-            '{{%idx-users_ticket-users_id}}',
+            '{{%idx-users_ticket-user_id}}',
             '{{%users_ticket}}',
-            'users_id'
+            'user_id'
         );
 
-        // add foreign key for table `{{%users}}`
+        // add foreign key for table `{{%user}}`
         $this->addForeignKey(
-            '{{%fk-users_ticket-users_id}}',
+            '{{%fk-users_ticket-user_id}}',
             '{{%users_ticket}}',
-            'users_id',
-            '{{%users}}',
+            'user_id',
+            '{{%user}}',
             'id',
             'CASCADE'
         );
@@ -58,15 +62,15 @@ class m191111_144808_create_users_ticket_table extends Migration
      */
     public function safeDown()
     {
-        // drops foreign key for table `{{%users}}`
+        // drops foreign key for table `{{%user}}`
         $this->dropForeignKey(
-            '{{%fk-users_ticket-users_id}}',
+            '{{%fk-users_ticket-user_id}}',
             '{{%users_ticket}}'
         );
 
-        // drops index for column `users_id`
+        // drops index for column `user_id`
         $this->dropIndex(
-            '{{%idx-users_ticket-users_id}}',
+            '{{%idx-users_ticket-user_id}}',
             '{{%users_ticket}}'
         );
 

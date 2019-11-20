@@ -4,8 +4,12 @@ use yii\db\Migration;
 
 /**
  * Handles the creation of table `{{%events_ticket}}`.
+ * Has foreign keys to the tables:
+ *
+ * - `{{%event}}`
+ * - `{{%ticket_type}}`
  */
-class m191111_144823_create_events_ticket_table extends Migration
+class m191117_080822_create_events_ticket_table extends Migration
 {
     /**
      * {@inheritdoc}
@@ -14,25 +18,25 @@ class m191111_144823_create_events_ticket_table extends Migration
     {
         $this->createTable('{{%events_ticket}}', [
             'id' => $this->primaryKey(),
-            'events_id' => $this->integer()->notNull(),
+            'event_id' => $this->integer()->notNull(),
             'ticket_type_id' => $this->integer()->notNull(),
             'cost' => $this->integer()->defaultValue(0),
-            'amount_of_tickets' => $this->integer()->defaultValue(0),
+            'amount' => $this->integer()->defaultValue(0),
         ]);
 
-        // creates index for column `events_id`
+        // creates index for column `event_id`
         $this->createIndex(
-            '{{%idx-events_ticket-events_id}}',
+            '{{%idx-events_ticket-event_id}}',
             '{{%events_ticket}}',
-            'events_id'
+            'event_id'
         );
 
-        // add foreign key for table `{{%events}}`
+        // add foreign key for table `{{%event}}`
         $this->addForeignKey(
-            '{{%fk-events_ticket-events_id}}',
+            '{{%fk-events_ticket-event_id}}',
             '{{%events_ticket}}',
-            'events_id',
-            '{{%events}}',
+            'event_id',
+            '{{%event}}',
             'id',
             'CASCADE'
         );
@@ -60,15 +64,15 @@ class m191111_144823_create_events_ticket_table extends Migration
      */
     public function safeDown()
     {
-        // drops foreign key for table `{{%events}}`
+        // drops foreign key for table `{{%event}}`
         $this->dropForeignKey(
-            '{{%fk-events_ticket-events_id}}',
+            '{{%fk-events_ticket-event_id}}',
             '{{%events_ticket}}'
         );
 
-        // drops index for column `events_id`
+        // drops index for column `event_id`
         $this->dropIndex(
-            '{{%idx-events_ticket-events_id}}',
+            '{{%idx-events_ticket-event_id}}',
             '{{%events_ticket}}'
         );
 

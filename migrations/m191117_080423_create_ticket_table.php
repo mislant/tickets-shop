@@ -4,8 +4,12 @@ use yii\db\Migration;
 
 /**
  * Handles the creation of table `{{%ticket}}`.
+ * Has foreign keys to the tables:
+ *
+ * - `{{%event}}`
+ * - `{{%ticket_type}}`
  */
-class m191111_144742_create_ticket_table extends Migration
+class m191117_080423_create_ticket_table extends Migration
 {
     /**
      * {@inheritdoc}
@@ -14,23 +18,23 @@ class m191111_144742_create_ticket_table extends Migration
     {
         $this->createTable('{{%ticket}}', [
             'id' => $this->primaryKey(),
-            'events_id' => $this->integer()->notNull(),
+            'event_id' => $this->integer()->notNull(),
             'ticket_type_id' => $this->integer()->notNull(),
         ]);
 
-        // creates index for column `events_id`
+        // creates index for column `event_id`
         $this->createIndex(
-            '{{%idx-ticket-events_id}}',
+            '{{%idx-ticket-event_id}}',
             '{{%ticket}}',
-            'events_id'
+            'event_id'
         );
 
-        // add foreign key for table `{{%events}}`
+        // add foreign key for table `{{%event}}`
         $this->addForeignKey(
-            '{{%fk-ticket-events_id}}',
+            '{{%fk-ticket-event_id}}',
             '{{%ticket}}',
-            'events_id',
-            '{{%events}}',
+            'event_id',
+            '{{%event}}',
             'id',
             'CASCADE'
         );
@@ -58,15 +62,15 @@ class m191111_144742_create_ticket_table extends Migration
      */
     public function safeDown()
     {
-        // drops foreign key for table `{{%events}}`
+        // drops foreign key for table `{{%event}}`
         $this->dropForeignKey(
-            '{{%fk-ticket-events_id}}',
+            '{{%fk-ticket-event_id}}',
             '{{%ticket}}'
         );
 
-        // drops index for column `events_id`
+        // drops index for column `event_id`
         $this->dropIndex(
-            '{{%idx-ticket-events_id}}',
+            '{{%idx-ticket-event_id}}',
             '{{%ticket}}'
         );
 
