@@ -35,14 +35,24 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
-    echo Nav::widget([
-        'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'Login', 'url' => ['/user/login']],
-            Yii::$app->user->isGuest ? (
+    if(Yii::$app->user->isGuest)
+    {
+        echo Nav::widget([
+            'options' => ['class' => 'navbar-nav navbar-right'],
+            'items' => [
+                ['label' => 'Home', 'url' => ['/site/index']],
+                ['label' => 'Login', 'url' => ['/user/login']],
                 ['label' => 'Sign-Up', 'url' => ['/user/signup']]
-            ) : (
+            ]
+        ]);
+    }else
+    {
+        echo Nav::widget([
+            'options' => ['class' => 'navbar-nav navbar-right'],
+            'items' => [
+                ['label' => 'Home', 'url' => ['/site/index']],
+                ['label' => 'Event controll', 'url' => ['/event/show-events']],
+                ['label' => 'Ticket type controll', 'url' => ['/event/show-ticket_type']],
                 '<li>'
                 . Html::beginForm(['/user/logout'], 'post')
                 . Html::submitButton(
@@ -51,9 +61,9 @@ AppAsset::register($this);
                 )
                 . Html::endForm()
                 . '</li>'
-            )
-        ],
-    ]);
+            ]
+        ]);
+    }
     NavBar::end();
     ?>
 

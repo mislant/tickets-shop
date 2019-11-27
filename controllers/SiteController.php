@@ -15,32 +15,6 @@ class SiteController extends Controller
     /**
      * {@inheritdoc}
      */
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function actions()
     {
         return [
@@ -64,65 +38,35 @@ class SiteController extends Controller
         return $this->render('index');
     }
 
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
+    public function actionRole()
     {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
+        // $admin = Yii::$app->authManager->createRole('O5');
+        // $admin->description = 'Главный администратор';
+        // Yii::$app->authManager->add($admin);
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
+        // $manager = Yii::$app->authManager->createRole('manager');
+        // $manager->description = 'Менеджер-администратор';
+        // Yii::$app->authManager->add($manager);
 
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
+        // $user = Yii::$app->authManager->createRole('user');
+        // $user->description = 'Обычный авторизированный пользователь';
+        // Yii::$app->authManager->add($user);
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
+        // $guest = Yii::$app->authManager->createRole('guest');
+        // $guest->description = 'Гость';
+        // Yii::$app->authManager->add($guest);
 
-        return $this->goHome();
-    }
+        // $permit = Yii::$app->authManager->createPermission('canAdmin');
+        // $permit->description = 'Право на вход в админку';
+        // Yii::$app->authManager->add($permit);
 
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
+        // $role_a = Yii::$app->authManager->getRole('O5');
+        // $permit = Yii::$app->authManager->getPermission('canAdmin');
+        // Yii::$app->authManager->addChild($role_a, $permit);
 
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
-    }
+        $userRole = Yii::$app->authManager->getRole('O5');
+        Yii::$app->authManager->assign($userRole, Yii::$app->user->getId()); 
 
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('reg');
+        return 1223;
     }
 }

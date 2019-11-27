@@ -10,7 +10,7 @@ class SignupForm extends Model
     public $username;
     public $email;
     public $password;
-    // public $password_repeat;
+    public $password_repeat;
 
     public function attributeLabels()
     {
@@ -28,7 +28,7 @@ class SignupForm extends Model
         return[
             [['username','password','email'],'required', 'message' => 'Заполните поле'],
             ['password' , 'string', 'min' => 2],
-            // ['password', 'compare','compareAttribute' => 'password_repeat'],
+            ['password_repeat', 'compare','compareAttribute' => 'password'],
             ['email','email'],
             ['username','unique', 'targetClass' =>User::className(), 'message' => 'Этот логин уже занят'],
             ['email','unique', 'targetClass' =>User::className(),'message' => 'Этот E-mail уже зарегистрирован']
@@ -43,6 +43,4 @@ class SignupForm extends Model
         $user->password = $user->generatePassword($this->password);
         return $user->save();
     }
-    
-
 }

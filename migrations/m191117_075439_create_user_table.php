@@ -21,7 +21,6 @@ class m191117_075439_create_user_table extends Migration
             'email' => $this->string()->notNull()->unique(),
             'wallet' => $this->double()->defaultValue(0),
             'amount_of_tickets' => $this->integer()->defaultValue(0),
-            'is_admin' => $this->integer()->defaultValue(0),
         ]);
     }
 

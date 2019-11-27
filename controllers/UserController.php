@@ -12,30 +12,13 @@ class UserController extends Controller
 {
     public function actionSignup()
     {
-        // if(\Yii::$app->user->isGuest)
-        // {
-        //     return $this-> goHome();
-        // }
         $model = new SignupForm();
-        if (isset($_POST['SignupForm']))
+        if ($model->load(Yii::$app->request->post()))
         {
-            $model->attributes = Yii::$app->request->post('SignupForm');
             if($model->validate() && $model->signup())
-            {
+            {   
                 return $this->goHome();
-            }
-            // $user = new User;
-            // $user->username = $model->username;
-            // $user->email = $model->email;
-            // $user->password = \Yii::$app->security->generatePasswordHash($model->password);
-            // if ($user->save(false))
-            // {
-            //     return $this->goHome();
-            // }
-            else
-            {
-                return print_r('govno');
-            }
+            }   
         }
         return $this->render('signup',compact('model'));
     }
