@@ -14,7 +14,7 @@ class m191117_080026_create_ticket_type_table extends Migration
     {
         $this->createTable('{{%ticket_type}}', [
             'id' => $this->primaryKey(),
-            'type' => $this->string(),
+            'type' => $this->string()->unique(),
         ]);
     }
 

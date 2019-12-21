@@ -22,7 +22,13 @@ class TicketType extends ActiveRecord
 
     public static function GiveAll()
     {
-        $ticket_type = new Ticket_type;
+        $ticket_type = new TicketType;
         return $ticket_type->find()->all();
+    }
+
+    public static function deleteTicketType($id)
+    {
+        $ticket_type = TicketType::findOne($id);
+        return $ticket_type->delete();
     }
 }

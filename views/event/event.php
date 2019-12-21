@@ -1,26 +1,49 @@
-<?php use yii\helpers\Html; ?>
+<?php
+
+use yii\helpers\Html;
+use yii\data\ActiveDataProvider;
+use app\models\Event;
+use app\models\EventSearch;
+use yii\grid\GridView;
+
+?>
+<?php
+if (Yii::$app->session->has('error_message')) {
+    echo Yii::$app->session->getFlash('error_message');
+}
+?>
 <div class="container-fluid">
-<?php echo Html::a('Create new event', array('event/event-create'), array('class' => 'btn btn-primary pull-right')); ?>
-</div> 
-<div class="clearfix"></div>
-<hr />
-<table class="table table-striped table-hover">
-    <tr>
-        <td>#</td>
-        <td>Title</td>
-        <td>Adress</td>
-        <td>Time</td>
-        <td>Amount of tickets</td>
-    </tr>
-    <?php foreach ($data as $event): ?>
-        <tr>
-            <td>
-                <?php echo $event->id; ?>
-            </td>
-            <td><?php echo $event->title; ?></td>
-            <td><?php echo $event->adress ?></td>
-            <td><?php echo $event->date ?></td>
-            <td><?php echo $event->amount_of_tickets ?></td>
-        </tr>
-    <?php endforeach; ?>
-</table>
+    <?php echo Html::a('Create new event', ['event/event-create'], ['class' => 'btn btn-primary pull-right']); ?>
+</div>
+<hr>
+<?php
+$model = new EventSearch();
+?>
+
+<?= GridView::widget([
+
+    'dataProvider' => $model->search(Yii::$app->request->queryParams),
+    'filterModel' => $model,
+    'columns' => [
+        ['class' => 'yii\grid\SerialColumn'],
+        'id',
+        'title',
+        'adress',
+        'date',
+        'amount_of_tickets',
+
+        ['class' => 'yii\grid\ActionColumn',
+            'template' => '{view} {delete}',
+            'buttons' => [
+                'view' => function ($url, $model, $key) {
+                        return Html::a('<span class="glyphicon glyphicon-apple"></span>',['/event/event-details','id' => $model->id]);
+                },
+                'delete' => function ($url, $model, $key) {
+                    return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/event-delete', 'id' => $model->id]);
+                }
+            ]
+        ],
+    ]
+
+])
+?>

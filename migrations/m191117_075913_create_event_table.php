@@ -14,11 +14,28 @@ class m191117_075913_create_event_table extends Migration
     {
         $this->createTable('{{%event}}', [
             'id' => $this->primaryKey(),
-            'title' => $this->string()->notNull(),
+            'created_by' => $this->integer(),
+            'title' => $this->string()->notNull()->unique(),
+            'description' => $this->string(),
             'adress' => $this->string()->notNull(),
             'date' => $this->date(),
             'amount_of_tickets' => $this->integer()->defaultValue(0),
         ]);
+
+        $this->createIndex(
+            '{{%idx-event-created_by}}',
+            '{{%event}}',
+            'created_by'
+        );
+
+        $this->addForeignKey(
+            '{{%fk-event-created_by}}',
+            '{{%event}}',
+            'created_by',
+            '{{%user}}',
+            'id',
+            'CASCADE'
+        );
     }
 
     /**
@@ -26,6 +43,18 @@ class m191117_075913_create_event_table extends Migration
      */
     public function safeDown()
     {
+        // drops foreign key for table `{{%event}}`
+        $this->dropForeignKey(
+            '{{%fk-event-created_by}}',
+            '{{%event}}'
+        );
+
+        // drops index for column `event_id`
+        $this->dropIndex(
+            '{{%idx-event-created_by}}',
+            '{{%event}}'
+        );
+
         $this->dropTable('{{%event}}');
     }
 }

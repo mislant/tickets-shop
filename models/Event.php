@@ -6,9 +6,9 @@ use yii\db\ActiveRecord;
 
 class Event extends ActiveRecord
 {
-    public function getEvents_tickets()
+    public function getEventsTickets()
     {
-        return $this->hasMany(Events_ticket::className(),['event_id' => 'id']);
+        return $this->hasMany(EventsTicket::className(), ['event_id' => 'id']);
     }
 
     public function attributeLabels()
@@ -22,33 +22,40 @@ class Event extends ActiveRecord
         ];
     }
 
+    public static function dataValidate($date)
+    {
+        $nowDate = date('Y-m-d H:i:s');
+        return $nowDate <= $date;
+    }
+
     public static function GiveAll()
     {
         $event = new Event;
         return $event->find()->all();
     }
 
-    public static function GiveLastId()
+    public static function countTotal($id)
     {
-        $events = Event::find()->asArray()->all();
-        $reversed_events = array_reverse($events);
-        $last_event = $reversed_events[0];
-        $id = 0 + $last_event['id'];
-        return $id;
-    }
-
-    public static function countTotal()
-    {
-        $event = Event::findOne(Event::GiveLastId());
-        $event_tickets = $event->events_tickets;
+        $event = Event::findOne($id);
+        $events_tickets = $event->eventsTickets;
         $total = 0;
-        foreach ($event_tickets as $tickets) 
-        {
+        foreach ($events_tickets as $tickets) {
             $total += $tickets['amount'];
         }
         $event->amount_of_tickets = $total;
         return $event->save();
     }
+
+    public static function deleteEvent($id)
+    {
+        $event = Event::findOne($id);
+        $events_tickets = $event->eventsTickets;
+        foreach ($events_tickets as $tickets) {
+            $tickets->delete();
+        }
+        return $event->delete();
+    }
+
 }
 
 

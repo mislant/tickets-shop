@@ -9,6 +9,7 @@ class User extends ActiveRecord implements IdentityInterface
 {
 //==============================================================
 
+
     public static function findIdentity($id)
     {
         return self::findOne($id);
@@ -52,9 +53,7 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
 
-
 //==============================================================
-
 
 
     public function generatePassword($password)
@@ -66,4 +65,18 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return $this->password === sha1($password);
     }
+
+    public function getAssignment()
+    {
+        return AuthAssignment::findOne(['user_id' => $this->id]);
+    }
+
+    public static function getUsernameAndId($id)
+    {
+        $user = User::findOne($id);
+        $data['id'] = $user->id;
+        $data['username'] = $user->username;
+        return $data;
+    }
+
 }

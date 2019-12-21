@@ -1,18 +1,41 @@
-<?php use yii\helpers\Html; ?>
+<?php
+
+use yii\helpers\Html;
+use app\models\TicketType;
+use yii\data\ActiveDataProvider;
+use yii\grid\GridView;
+
+?>
 <div class="container-fluid">
-<?php echo Html::a('Create new ticket type', array('event/ticket_type-create'), array('class' => 'btn btn-primary pull-right')); ?>
-</div> 
+    <?php echo Html::a('Create new ticket type', array('event/ticket-type-create'), array('class' => 'btn btn-primary pull-right')); ?>
+</div>
 <div class="clearfix"></div>
-<hr />
-<table class="table table-striped table-hover">
-    <tr>
-        <td>#</td>
-        <td>Ticket type</td>
-    </tr>
-    <?php foreach ($data as $ticket_type): ?>
-        <tr>
-            <td><?php echo $ticket_type->id; ?></td>
-            <td><?php echo $ticket_type->type; ?></td>
-        </tr>
-    <?php endforeach; ?>
-</table>
+<hr/>
+
+<?php
+$query = TicketType::find();
+$dataProvider = new ActiveDataProvider([
+    'query' => $query,
+    'pagination' => [
+        'pageSize' => '10',
+    ]
+]);
+?>
+
+<?= GridView::widget([
+    'dataProvider' => $dataProvider,
+    'columns' => [
+        ['class' => 'yii\grid\SerialColumn'],
+        'id',
+        'type',
+        ['class' => 'yii\grid\ActionColumn',
+        'template' => '{delete}',
+            'buttons' => [
+                    'delete' => function($url,$model,$key)
+                    {
+                        return Html::a('<span class="glyphicon glyphicon-trash"></span>', ['/event/ticket-type-delete','id' => $model->id]);
+                    }
+            ]
+        ],
+    ]
+])  ?>

@@ -2,71 +2,58 @@
 
 namespace app\controllers;
 
+use app\models\AuthAssignment;
+use app\models\User;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\Response;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
+
 
 class SiteController extends Controller
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function actions()
+    public function behaviors()
     {
         return [
-            'error' => [
-                'class' => 'yii\web\ErrorAction',
-            ],
-            'captcha' => [
-                'class' => 'yii\captcha\CaptchaAction',
-                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['admin'],
+                        'actions' => ['set-role', 'rbac-init'],
+                    ],
+                    [
+                        'allow' => true,
+                        'roles' => ['admin', 'manager'],
+                        'actions' => ['show-role']
+                    ],
+                    [
+                        'allow' => true,
+                        'roles' => ['?', 'user', 'manager', 'admin'],
+                        'actions' => ['index'],
+                    ]
+                ],
             ],
         ];
     }
 
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
         return $this->render('index');
     }
 
-    public function actionRole()
+    public function actionShowRole()
     {
-        // $admin = Yii::$app->authManager->createRole('O5');
-        // $admin->description = 'Главный администратор';
-        // Yii::$app->authManager->add($admin);
+        return $this->render('show-role');
+    }
 
-        // $manager = Yii::$app->authManager->createRole('manager');
-        // $manager->description = 'Менеджер-администратор';
-        // Yii::$app->authManager->add($manager);
-
-        // $user = Yii::$app->authManager->createRole('user');
-        // $user->description = 'Обычный авторизированный пользователь';
-        // Yii::$app->authManager->add($user);
-
-        // $guest = Yii::$app->authManager->createRole('guest');
-        // $guest->description = 'Гость';
-        // Yii::$app->authManager->add($guest);
-
-        // $permit = Yii::$app->authManager->createPermission('canAdmin');
-        // $permit->description = 'Право на вход в админку';
-        // Yii::$app->authManager->add($permit);
-
-        // $role_a = Yii::$app->authManager->getRole('O5');
-        // $permit = Yii::$app->authManager->getPermission('canAdmin');
-        // Yii::$app->authManager->addChild($role_a, $permit);
-
-        $userRole = Yii::$app->authManager->getRole('O5');
-        Yii::$app->authManager->assign($userRole, Yii::$app->user->getId()); 
-
-        return 1223;
+    public function actionSetRole($id)
+    {
+        $data = User::getUsernameAndId($id);
+        $model = new AuthAssignment();
+        if ($model->load(Yii::$app->request->post()) && $model->SaveUserRole($id)) {
+            return $this->redirect('/site/show-role');
+        }
+        return $this->render('set-role', compact('data', 'model'));
     }
 }

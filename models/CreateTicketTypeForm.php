@@ -3,9 +3,8 @@
 namespace app\models;
 
 use yii\base\Model;
-use app\models\Ticket_type;
 
-class CreateTicket_typeForm extends Model
+class CreateTicketTypeForm extends Model
 {
     public $id;
     public $type;
@@ -26,9 +25,9 @@ class CreateTicket_typeForm extends Model
         ];
     }
     
-    public function createTicket_type()
+    public function createTicketType()
     {
-        $model = new Ticket_type();
+        $model = new TicketType();
         $model->type = $this->type;
         return $model->save();
     }

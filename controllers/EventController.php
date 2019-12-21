@@ -1,80 +1,155 @@
-<?php 
+<?php
 
 namespace app\controllers;
 
 use Yii;
+use yii\db\Exception;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use app\models\Event;
 use app\models\CreateEventForm;
-use app\models\Ticket_type;
-use app\models\CreateTicket_typeForm;
-use app\models\Events_ticket;
-use app\models\CreateEvents_ticketForm;
+use app\models\TicketType;
+use app\models\CreateTicketTypeForm;
+use app\models\CreateEventsTicketForm;
 
 class EventController extends Controller
 {
-    public function actionShowEvents()
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['admin'],
+                        'actions' => ['ticket-type-list', 'ticket-type-create', 'ticket-type-delete'],
+                    ],
+                    [
+                        'allow' => true,
+                        'roles' => ['manager', 'admin'],
+                        'actions' => ['event-delete', 'event-create', 'events-ticket-create', 'total-tickets'],
+                    ],
+                    [
+                        'allow' => true,
+                        'roles' => ['user', 'manager', 'admin'],
+                        'actions' => ['events-list', 'event-details'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    ///==================EventActionsBegin===========================
+
+
+    public function actionEventsList()
     {
         $data = Event::GiveAll();
         return $this->render('event', compact('data'));
     }
 
+    public function actionEventDetails($id)
+    {
+        $event_model = new CreateEventForm();
+        $ticket_model = new CreateEventsTicketForm();
+        $event = Event::findOne($id);
+        $events_tickets = $event->eventsTickets;
+        if (Yii::$app->user->can('updateOwnEvent', ['event' => $event])) {
+            if ($event_model->load(Yii::$app->request->post())) {
+                if ($event_model->validate() && $event_model->update($id)) {
+                    return $this->redirect(['/event/event-details', 'id' => $id]);
+                }
+            }
+            if ($ticket_model->load(Yii::$app->request->post())) {
+                if ($ticket_model->validate() && $ticket_model->update($id)) {
+                    return $this->redirect(['/event/event-details', 'id' => $id]);
+                }
+            }
+        } else {
+            Yii::$app->session->setFlash('error_message', 'У вас нет прав на данное действие!');
+            return $this->redirect(['/event/event-details', 'id' => $id]);
+        }
+        return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'ticket_model'));
+    }
+
     public function actionEventCreate()
     {
         $model = new CreateEventForm();
-        if(Yii::$app->request->post('CreateEventForm'))
-        {
-            $model->attributes = Yii::$app->request->post('CreateEventForm');
-            if ($model->validate() && $model->createEvent())
-            {
-                return $this->redirect('events_ticket-create');
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $event = $model->create()) {
+                return $this->redirect(['events-ticket-create', 'id' => $event->id]);
             }
         }
-        return $this->render('create_event',compact('model'));
+        return $this->render('event_create', compact('model'));
     }
 
-    public function actionShowTicket_type()
+    public function actionEventDelete($id)
     {
-        $data = Ticket_type::GiveAll();
-        return $this->render('tickettype',compact('data'));
+        if (Yii::$app->user->can('updateOwnPost', ['event' => Event::find($id)])) {
+            if (Event::deleteEvent($id)) {
+                return $this->redirect('events-list');
+            }
+        } else {
+            Yii::$app->session->setFlash('error_message', 'У вас нет прав на данное действие!');
+            return $this->redirect(['/event/events-list']);
+        }
     }
 
-    public function actionTicket_typeCreate()
+    public function actionEventsTicketCreate($id)
     {
-        $model = new CreateTicket_typeForm;
-        if ($model->load(Yii::$app->request->post()))
-        {
-            if ($model->validate() && $model->createTicket_type())
-            {
-                return $this->goHome();
+        $model = new CreateEventsTicketForm();
+        $model->event_id = $id;
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $model->create()) {
+                return $this->redirect(['events-ticket-create', 'id' => $id]);
             }
         }
-        return $this->render('create_ticket_type' , compact('model'));
+        return $this->render('events_ticket_create', compact('model'));
     }
 
-    public function actionEvents_ticketCreate()
+    public function actionTotalTickets($id)
     {
-        $model = new CreateEvents_ticketForm();
-        $model->event_id = Event::GiveLastId();
-        if ($model->load(Yii::$app->request->post()))
-        {
-            if ($model->validate() && $model->create())
-            {
-                return $this->redirect('events_ticket-create');
+        if (Event::countTotal($id)) {
+            return $this->redirect('/event/events-list');
+        }
+    }
+
+
+    ///==================EventActionsEnd===================================
+    ///
+    /// =================TicketActionBegin=================================
+
+
+    public function actionTicketTypeList()
+    {
+        $data = TicketType::GiveAll();
+        return $this->render('ticket_type', compact('data'));
+    }
+
+    public function actionTicketTypeCreate()
+    {
+        $model = new CreateTicketTypeForm;
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $model->createTicketType()) {
+                return $this->redirect('/event/ticket-type-list');
             }
         }
-        return $this->render('create_events_ticket',compact('model'));
+        return $this->render('ticket_type_create', compact('model'));
     }
 
-    public function actionTotalTickets()
+    public function actionTicketTypeDelete($id)
     {
-        if (Event::countTotal())
-        {
-            return $this->goHome();
-        }
+        TicketType::deleteTicketType($id);
+        return $this->redirect('/event/ticket-type-list');
     }
 
-//==============================================================
+
+
+    /// =================TicketActionEnd============================
+
+
+    ///==============================================================
 
     public function actionAddevent()
     {
@@ -83,5 +158,10 @@ class EventController extends Controller
         $event->adress = 'Мироприятия';
         $event->amount_of_tickets = '10000';
         return $event->save();
+    }
+
+    public function actionTest()
+    {
+        return $this->render('test2');
     }
 }
