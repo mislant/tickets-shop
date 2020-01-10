@@ -18,7 +18,7 @@ class Event extends ActiveRecord
             'title' => 'Title',
             'adress' => 'Adress',
             'date' => 'Date',
-            'amount_of_tickets' => 'Amount og tickets'
+            'amount_of_tickets' => 'Amount of tickets'
         ];
     }
 

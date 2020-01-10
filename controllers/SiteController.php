@@ -3,8 +3,10 @@
 namespace app\controllers;
 
 use app\models\AuthAssignment;
+use app\models\Event;
 use app\models\User;
 use Yii;
+use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 
@@ -39,7 +41,11 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+        $q = Event::find()->orderBy(['date' => SORT_DESC]);
+        $countQuery = clone $q;
+        $pages = new Pagination(['totalCount' =>$countQuery->count(), 'pageSize' => 5]);
+        $events = $q->offset($pages->offset)->limit($pages->limit)->all();
+        return $this->render('index',compact('events','pages'));
     }
 
     public function actionShowRole()

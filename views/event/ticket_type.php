@@ -7,7 +7,7 @@ use yii\grid\GridView;
 
 ?>
 <div class="container-fluid">
-    <?php echo Html::a('Create new ticket type', array('event/ticket-type-create'), array('class' => 'btn btn-primary pull-right')); ?>
+    <?php echo Html::a('Создать новый тип билета', array('event/ticket-type-create'), array('class' => 'btn btn-primary pull-right')); ?>
 </div>
 <div class="clearfix"></div>
 <hr/>

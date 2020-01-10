@@ -66,9 +66,6 @@ class EventController extends Controller
                     return $this->redirect(['/event/event-details', 'id' => $id]);
                 }
             }
-        } else {
-            Yii::$app->session->setFlash('error_message', 'У вас нет прав на данное действие!');
-            return $this->redirect(['/event/event-details', 'id' => $id]);
         }
         return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'ticket_model'));
     }
@@ -86,7 +83,7 @@ class EventController extends Controller
 
     public function actionEventDelete($id)
     {
-        if (Yii::$app->user->can('updateOwnPost', ['event' => Event::find($id)])) {
+        if (Yii::$app->user->can('updateOwnEvent', ['event' => Event::find($id)->one()])) {
             if (Event::deleteEvent($id)) {
                 return $this->redirect('events-list');
             }
@@ -102,17 +99,11 @@ class EventController extends Controller
         $model->event_id = $id;
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate() && $model->create()) {
+                Event::countTotal($id);
                 return $this->redirect(['events-ticket-create', 'id' => $id]);
             }
         }
         return $this->render('events_ticket_create', compact('model'));
-    }
-
-    public function actionTotalTickets($id)
-    {
-        if (Event::countTotal($id)) {
-            return $this->redirect('/event/events-list');
-        }
     }
 
 

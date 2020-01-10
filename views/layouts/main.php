@@ -6,8 +6,6 @@
 
 use app\widgets\Alert;
 use yii\helpers\Html;
-use yii\bootstrap\Nav;
-use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
 
@@ -24,90 +22,35 @@ AppAsset::register($this);
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
 </head>
-<body>
+<body style="background-color: #edeef0;font-family: 'Amatic SC', cursive;">
 <?php $this->beginBody() ?>
 
 <div class="wrap">
-    <?php
-    NavBar::begin([
-        'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
-        'options' => [
-            'class' => 'navbar-inverse navbar-fixed-top',
-        ],
-    ]);
-    if (Yii::$app->user->isGuest) {
-        echo Nav::widget([
-            'options' => ['class' => 'navbar-nav navbar-right'],
-            'items' => [
-                ['label' => 'Главная', 'url' => ['/site/index']],
-                ['label' => 'Войти', 'url' => ['/user/log-in']],
-                ['label' => 'Зарегестрироваться', 'url' => ['/user/sign-up']]
-            ]
-        ]);
-    } elseif (Yii::$app->user->can('admin')) {
-        echo Nav::widget([
-            'options' => ['class' => 'navbar-nav navbar-right'],
-            'items' => [
-                ['label' => 'Главная', 'url' => ['/site/index']],
-                ['label' => 'Управление мероприятими', 'url' => ['/event/events-list']],
-                ['label' => 'Управление типом билетов', 'url' => ['/event/ticket-type-list']],
-                ['label' => 'Управление ролями', 'url' => ['site/show-role']],
-                '<li>'
-                . Html::beginForm(['/user/logout'], 'post')
-                . Html::submitButton(
-                    'Выйти (' . Yii::$app->user->identity->username . ')',
-                    ['class' => 'btn btn-link logout']
-                )
-                . Html::endForm()
-                . '</li>'
-            ]
-        ]);
-    } elseif
-    (Yii::$app->user->can('manager')) {
-        echo Nav::widget([
-            'options' => ['class' => 'navbar-nav navbar-right'],
-            'items' => [
-                ['label' => 'Главная', 'url' => ['/site/index']],
-                ['label' => 'Управление мероприятиями', 'url' => ['/event/events-list']],
-                '<li>'
-                . Html::beginForm(['/user/logout'], 'post')
-                . Html::submitButton(
-                    'Выйти (' . Yii::$app->user->identity->username . ')',
-                    ['class' => 'btn btn-link logout']
-                )
-                . Html::endForm()
-                . '</li>'
-            ]
-        ]);
-    } else {
-        echo Nav::widget([
-            'options' => ['class' => 'navbar-nav navbar-right'],
-            'items' => [
-                ['label' => 'Личный кабинет', 'url' => ['/user/personal-list']],
-                '<li>'
-                . Html::beginForm(['/user/logout'], 'post')
-                . Html::submitButton(
-                    'Выйти',
-                    ['class' => 'btn btn-link logout']
-                )
-                . Html::endForm()
-                . '</li>'
-            ],
-        ]);
-    }
-    NavBar::end();
-    ?>
-
-    <div class="container">
+    <?php echo $this->render('navItems')?>
+    <div class="container" >
         <?= Breadcrumbs::widget([
             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
         ]) ?>
-        <?= Alert::widget() ?>
-        <?= $content ?>
+        <? if (Yii::$app->user->isGuest): ?>
+            <div class='row' style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem; ;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);">
+                <div class="col-md-12">
+                    <?= $content ?>
+                    <?= Alert::widget() ?>
+                </div>
+            </div>
+        <? else: ?>
+            <div class="row" style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);">
+                <div class="col-md-10">
+                    <?= $content ?>
+                    <?= Alert::widget() ?>
+                </div>
+                <div class="col-md-2">
+                    <? require 'sideBar.php' ?>
+                </div>
+            </div>
+        <? endif ?>
     </div>
 </div>
-
 <footer class="footer">
     <div class="container">
         <p class="pull-left">&copy; My Company <?= date('Y') ?></p>

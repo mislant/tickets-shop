@@ -13,7 +13,7 @@ if (Yii::$app->session->has('error_message')) {
 }
 ?>
 <div class="container-fluid">
-    <?php echo Html::a('Create new event', ['event/event-create'], ['class' => 'btn btn-primary pull-right']); ?>
+    <?php echo Html::a('Создать мероприятие', ['event/event-create'], ['class' => 'btn btn-primary pull-right']); ?>
 </div>
 <hr>
 <?php
@@ -36,7 +36,7 @@ $model = new EventSearch();
             'template' => '{view} {delete}',
             'buttons' => [
                 'view' => function ($url, $model, $key) {
-                        return Html::a('<span class="glyphicon glyphicon-apple"></span>',['/event/event-details','id' => $model->id]);
+                        return Html::a('<span class="glyphicon glyphicon-pencil"></span>',['/event/event-details','id' => $model->id]);
                 },
                 'delete' => function ($url, $model, $key) {
                     return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/event-delete', 'id' => $model->id]);

@@ -7,6 +7,11 @@ use yii\web\IdentityInterface;
 
 class User extends ActiveRecord implements IdentityInterface
 {
+    public function getTicket()
+    {
+        return $this->hasMany(Ticket::className(),['user_id' => 'id']);
+    }
+
 //==============================================================
 
 

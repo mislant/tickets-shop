@@ -16,9 +16,9 @@ class m191117_075913_create_event_table extends Migration
             'id' => $this->primaryKey(),
             'created_by' => $this->integer(),
             'title' => $this->string()->notNull()->unique(),
-            'description' => $this->string(),
+            'description' => $this->text(),
             'adress' => $this->string()->notNull(),
-            'date' => $this->date(),
+            'date' => $this->dateTime(),
             'amount_of_tickets' => $this->integer()->defaultValue(0),
         ]);
 

@@ -16,7 +16,7 @@ class m191117_075439_create_user_table extends Migration
             'id' => $this->primaryKey(),
             'username' => $this->string()->notNull()->unique(),
             'password' => $this->string()->notNull(),
-            'fistname' => $this->string(),
+            'firstname' => $this->string(),
             'surname'=> $this->string(),
             'email' => $this->string()->notNull()->unique(),
             'wallet' => $this->double()->defaultValue(0),

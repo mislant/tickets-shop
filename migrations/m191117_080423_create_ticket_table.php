@@ -18,9 +18,27 @@ class m191117_080423_create_ticket_table extends Migration
     {
         $this->createTable('{{%ticket}}', [
             'id' => $this->primaryKey(),
+            'user_id' => $this->integer()->notNull(),
             'event_id' => $this->integer()->notNull(),
             'ticket_type_id' => $this->integer()->notNull(),
         ]);
+
+        // creates index for column `user_id`
+        $this->createIndex(
+            '{{%idx-ticket-user_id}}',
+            '{{%ticket}}',
+            'user_id'
+        );
+
+        // add foreign key for table `{{%user}}`
+        $this->addForeignKey(
+            '{{%fk-ticket-user_id}}',
+            '{{%ticket}}',
+            'user_id',
+            '{{%user}}',
+            'id',
+            'CASCADE'
+        );
 
         // creates index for column `event_id`
         $this->createIndex(
@@ -62,6 +80,18 @@ class m191117_080423_create_ticket_table extends Migration
      */
     public function safeDown()
     {
+        // drops foreign key for table `{{%user}}`
+        $this->dropForeignKey(
+            '{{%fk-ticket-user_id}}',
+            '{{%ticket}}'
+        );
+
+        // drops index for column `user_id`
+        $this->dropIndex(
+            '{{%idx-ticket-user_id}}',
+            '{{%ticket}}'
+        );
+
         // drops foreign key for table `{{%event}}`
         $this->dropForeignKey(
             '{{%fk-ticket-event_id}}',

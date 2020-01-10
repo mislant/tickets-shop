@@ -5,6 +5,7 @@ use yii\widgets\ActiveForm;
 use kartik\datetime\DateTimePicker;
 ?>
 
+<div class="form"style="display: flex;width: 60%;margin: 0 auto;box-sizing: border-box;padding: 4rem;box-shadow: 0px 0px 12px 3px rgba(156,156,156,1);">
 <?php $form = ActiveForm::begin([
     'id' => 'form-input',
     'options' => ['class' => 'form-horizontal col-lg-11',]
@@ -23,5 +24,6 @@ use kartik\datetime\DateTimePicker;
     ] 
     ])?>
 </div>
-<?= Html::submitButton('Next step',['class' => 'btn btn-success']) ?>
+<?= Html::submitButton('Дальше',['class' => 'btn btn-success']) ?>
 <?php ActiveForm::end() ?>
+</div>

@@ -6,8 +6,6 @@
 use app\models\User;
 use yii\data\ActiveDataProvider;
 use yii\grid\GridView;
-use yii\data\ArrayDataProvider;
-use app\models\Query;
 
 ?>
 
@@ -24,30 +22,28 @@ $dataProvider = new ActiveDataProvider([
 ])
 ?>
 
-<div class='container'>
-    <?= GridView::widget(
-        [
-            'dataProvider' => $dataProvider,
-            'columns' => [
-                ['class' => 'yii\grid\SerialColumn'],
+<?= GridView::widget(
+    [
+        'dataProvider' => $dataProvider,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
 
-                'id',
-                'username',
-                [
-                    'header' => 'Роль',
-                    'value' => function ($model) {
-                        return $model->getAssignment()->item_name;
+            'id',
+            'username',
+            [
+                'header' => 'Роль',
+                'value' => function ($model) {
+                    return $model->getAssignment()->item_name;
+                }
+            ],
+            ['class' => 'yii\grid\ActionColumn',
+                'template' => '{update}',
+                'buttons' => [
+                    'update' => function ($url, $model) {
+                        return \yii\helpers\Html::a('<span class = "glyphicon glyphicon-refresh"></span>', ['/site/set-role', 'id' => $model['id']]);
                     }
-                ],
-                ['class' => 'yii\grid\ActionColumn',
-                    'template' => '{update}',
-                    'buttons' => [
-                        'update' => function ($url, $model) {
-                            return \yii\helpers\Html::a('<span class = "glyphicon glyphicon-refresh"></span>', ['/site/set-role', 'id' => $model['id']]);
-                        }
-                    ]
                 ]
             ]
-        ])
-    ?>
-</div>
+        ]
+    ])
+?>

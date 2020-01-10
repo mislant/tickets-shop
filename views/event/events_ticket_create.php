@@ -6,7 +6,7 @@ use yii\widgets\ActiveForm;
 use app\models\TicketType;
 
 ?>
-
+<div class="form" style="display: flex;width: 60%;margin: 0 auto;box-sizing: border-box;padding: 4rem;box-shadow: 0px 0px 12px 3px rgba(156,156,156,1);">
 <?php
 $form = ActiveForm::begin([
     'id' => 'form-input',
@@ -24,9 +24,10 @@ $params = [
         <?= $form->field($model, 'amount')->textInput(); ?>
     </div>
     <div class="form-row">
-        <?= Html::submitButton('Add More', ['class' => 'btn btn-success']) ?>
-        <?= Html:: a('End', ['/event/total-tickets', 'id' => $model->event_id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::submitButton('Добавить', ['class' => 'btn btn-success']) ?>
+        <?= Html:: a('Закончить', ['/event/event-details','id' => $model->event_id], ['class' => 'btn btn-primary']) ?>
     </div>
 
 
 <?php ActiveForm::end() ?>
+</div>
