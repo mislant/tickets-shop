@@ -4,13 +4,13 @@
 namespace app\controllers;
 
 
+use app\models\User;
 use yii\web\Controller;
 use Yii;
 
 class RbacController extends Controller
 {
-    public
-    function actionRbacInit()
+    public function actionRbacInit()
     {
         $auth = Yii::$app->authManager;
 
@@ -63,5 +63,37 @@ class RbacController extends Controller
         $auth->addChild($manager, $updateOwnEvent);
 
         return $this->goHome();
+    }
+
+    public function actionBaseUsersCreate()
+    {
+        $auth = Yii::$app->authManager;
+
+        $admin = new User();
+        $admin->username = 'Admin';
+        $admin->password = $admin->generatePassword('admin');
+        $admin->email = 'admin@mail.com';
+        $admin->save();
+        $adminRole = $auth->getRole('admin');
+        $auth->assign($adminRole, $admin->getId());
+
+        $manager = new User();
+        $manager->username = 'Manager';
+        $manager->password = $manager->generatePassword('admin');
+        $manager->email = 'manager@mail.com';
+        $manager->save();
+        $mangerRole = $auth->getRole('manager');
+        $auth->assign($mangerRole,$manager->getId());
+
+        $user = new User();
+        $user->username = 'User';
+        $user->password = $user->generatePassword('123');
+        $user->email = 'user@mail.com';
+        $user->save();
+        $userRole = $auth->getRole('user');
+        $auth->assign($userRole,$user->getId());
+
+        return $this->goHome();
+
     }
 }

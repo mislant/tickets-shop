@@ -59,16 +59,16 @@ use yii\helpers\Html;
                             <th>
                                 <?php
                                 $type = \app\models\TicketType::findOne($ticket->ticket_type_id);
-                                echo $form->field($model, 'ticket_type_id')->hiddenInput(['value' => $type->id])->label('');
                                 echo $type->type;
+                                echo $form->field($model, 'ticket_type_id')->hiddenInput(['value' => $type->id])->label('');
                                 ?>
                             </th>
                             <th><?= $ticket->amount ?></th>
                             <th>
-                                <div class="number">
-                                    <span class="minus">-</span>
+                                <div class="number" style="width: 12.4rem;height:4rem;display: flex;justify-content: center;align-items: center;">
+                                    <span class="minus btn" style="cursor: pointer">-</span>
                                     <?= $form->field($model, 'amount')->textInput(['value' => 0, 'size' => 1])->label('') ?>
-                                    <span class="plus">+</span>
+                                    <span class="plus btn" style="cursor: pointer">+</span>
                                 </div>
                             </th>
                             <th>

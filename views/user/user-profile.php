@@ -1,7 +1,6 @@
 <?php
 
 use yii\helpers\Html;
-use app\models\Ticket;
 use app\models\TicketType;
 use app\models\Event;
 
@@ -35,7 +34,7 @@ use app\models\Event;
                     </tr>
                 </table>
             </div>
-            <div style="margin:auto 20rem"><?= Html::a('Редактировать профиль', ['/user/profile-edit', 'id' => $user->id], ['class' => 'btn btn-dark']) ?></div>
+            <div style="margin:auto 20rem"><?= Html::a('Редактировать профиль', ['/user/edit-profile', 'id' => $user->id], ['class' => 'btn btn-dark']) ?></div>
         </div>
     </div>
     <div class="user-tickets">

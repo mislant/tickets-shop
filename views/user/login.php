@@ -11,7 +11,7 @@ use yii\widgets\ActiveForm;
         'options' => ['class' => 'form-horizontal']
     ])
     ?>
-    <?= $form->field($model, 'email')->input('email') ?>
+    <?= $form->field($model, 'emailnick')->textInput() ?>
     <?= $form->field($model, 'password')->passwordInput() ?>
     <div style="display: flex;width: 50%;flex-direction: row;align-items: center;text-align: center;justify-content: space-evenly;">
         <?= Html::submitButton('Войти', ['class' => 'btn btn-success']) ?>

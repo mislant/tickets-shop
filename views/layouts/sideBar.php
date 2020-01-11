@@ -8,7 +8,7 @@ use app\models\User;
         <div class="navbar-header">
             <ul class="nav navbar-nav" style="display: flex; flex-direction: column;padding:0.5rem;";>
                 <? if (Yii::$app->user->can('admin')): ?>
-                    <li><a href="/user/personal-list">Профиль<span style="font-size:16px;"
+                    <li><a href="/user/show-profile">Профиль<span style="font-size:16px;"
                                                                    class="pull-right hidden-xs showopacity glyphicon glyphicon-user"></span></a>
                     </li>
                     </li>
@@ -27,7 +27,7 @@ use app\models\User;
                         </ul>
                     </li>
                 <? elseif (Yii::$app->user->can('manager')): ?>
-                    <li><a href="/user/personal-list">Профиль<span style="font-size:16px;"
+                    <li><a href="/user/show-profile">Профиль<span style="font-size:16px;"
                                                                    class="pull-right hidden-xs showopacity glyphicon glyphicon-user"></span></a>
                     </li>
                     </li>
@@ -35,7 +35,7 @@ use app\models\User;
                                                          class="pull-right hidden-xs showopacity glyphicon glyphicon-blackboard"></span></a>
                     </li>
                 <? elseif (Yii::$app->user->can('user')): ?>
-                    <li><a href="/user/personal-list">Профиль<span style="font-size:16px;"
+                    <li><a href="/user/show-profile">Профиль<span style="font-size:16px;"
                                                                    class="pull-right hidden-xs showopacity glyphicon glyphicon-user"></span></a>
                     </li>
                     </li>
