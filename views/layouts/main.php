@@ -18,6 +18,7 @@ AppAsset::register($this);
     <meta charset="<?= Yii::$app->charset ?>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-01ff6321-24c8-4bc8-8a91-c197c7311d55&lang=ru_RU" type="text/javascript"></script>
     <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
@@ -26,20 +27,22 @@ AppAsset::register($this);
 <?php $this->beginBody() ?>
 
 <div class="wrap">
-    <?php echo $this->render('navItems')?>
-    <div class="container" >
+    <?php echo $this->render('navItems') ?>
+    <div class="container">
         <?= Breadcrumbs::widget([
             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
         ]) ?>
         <? if (Yii::$app->user->isGuest): ?>
-            <div class='row' style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem; ;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);">
+            <div class='row'
+                 style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem; ;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);min-height: 20rem;">
                 <div class="col-md-12">
                     <?= $content ?>
                     <?= Alert::widget() ?>
                 </div>
             </div>
         <? else: ?>
-            <div class="row" style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);">
+            <div class="row"
+                 style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);min-height: 20rem;">
                 <div class="col-md-10">
                     <?= $content ?>
                     <?= Alert::widget() ?>

@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\BuyTicketForm;
 use app\models\Event;
+use app\models\EventSearch;
 use app\models\Ticket;
 use app\models\UserProfile;
 use app\models\UsersTicket;
@@ -62,7 +63,7 @@ class UserController extends Controller
         $model = new UserProfile();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->photoUpload() && $model->refresh()) {
-                return $this->redirect('/user/edit-profile');
+                return $this->redirect('/user/show-profile');
             }
         }
         return $this->render('user-edit', compact('user', 'model'));
@@ -91,6 +92,14 @@ class UserController extends Controller
         }
         Yii::$app->session->setFlash('error_message', 'Ошибка');
         return $this->redirect('/user/personal-list');
+    }
+
+    public function actionShowManagerTools()
+    {
+        $user = Yii::$app->getUser()->getIdentity();
+        $model = new EventSearch();
+
+        return $this->render('manager-tools',compact('user','model'));
     }
 
 

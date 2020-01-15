@@ -28,10 +28,13 @@ class EventSearch extends Model
         return Model::scenarios();
     }
 
-    public function search($params)
+    public function search($params, $user_id = null)
     {
-        $query = Event::find();
-
+        if ($user_id == null) {
+            $query = Event::find();
+        } else {
+            $query = Event::find()->where(['created_by' => $user_id]);
+        }
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [

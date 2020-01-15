@@ -22,7 +22,7 @@ class SiteController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['admin'],
-                        'actions' => ['set-role', 'rbac-init'],
+                        'actions' => ['set-role', 'test-map'],
                     ],
                     [
                         'allow' => true,
@@ -61,5 +61,10 @@ class SiteController extends Controller
             return $this->redirect('/site/show-role');
         }
         return $this->render('set-role', compact('data', 'model'));
+    }
+
+    public function actionTestMap()
+    {
+        return $this->render('test');
     }
 }

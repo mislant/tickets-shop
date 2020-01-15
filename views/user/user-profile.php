@@ -9,10 +9,17 @@ use app\models\Event;
 <div class="box" style="display: flex;flex-direction: column;padding-left: 2rem;">
     <h1 class="user" style="text-align: center;"><?= $user->username ?></h1>
     <div class="user-office" style="display: flex;flex-direction:row;margin-bottom: 5rem;">
-        <div class="avatar"
-             style="background-color: #1a1a1a;width: 20rem;height: 20rem;color: white;display:flex;justify-content: center;align-items: center;">
-            Нет фото
-        </div>
+        <? if ($user->avatar == null): ?>
+            <div class="avatar"
+                 style="background-color: #222222;width: 14rem;height: 14rem;color: white;display:flex;justify-content: center;align-items: center;">
+                Нет фото
+            </div>
+        <? else: ?>
+            <div class="photo"
+                 style="margin: 0 auto;display: flex;justify-content: center;align-items: center;">
+                <?= Html::img('@web/' . $user->avatar, ['alt' => 'Ava']) ?>
+            </div>
+        <? endif; ?>
         <div class="user-info" style="width: 60%;">
             <div class="user-table" style="width: 100%;padding: 2rem 2rem;margin: 0 auto;">
                 <table class="table table-dark">
@@ -68,13 +75,13 @@ use app\models\Event;
                         <tr>
                             <th></th>
                             <th></th>
-                            <th><?= Html::a('Вернуть', ['/user/return-ticket', 'id' => $ticket->id],['class' => ['btn btn-success']]) ?></th>
+                            <th><?= Html::a('Вернуть', ['/user/return-ticket', 'id' => $ticket->id], ['class' => ['btn btn-success']]) ?></th>
                         </tr>
                         </tfoot>
                     </table>
                 </div>
                 <div class="message">
-                    <h2 style="color: darkred;"><?=Yii::$app->session->hasFlash('error_message')?></h2>
+                    <h2 style="color: darkred;"><?= Yii::$app->session->hasFlash('error_message') ?></h2>
                 </div>
             <? endif; ?>
         <? endforeach; ?>

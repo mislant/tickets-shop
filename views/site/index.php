@@ -4,11 +4,10 @@ use app\models\User;
 use yii\widgets\LinkPager;
 use yii\helpers\Html;
 
-$user = User::findOne(Yii::$app->user->id)
+$user = Yii::$app->getUser()->getIdentity();
 
 ?>
 <? if (Yii::$app->user->isGuest): ?>
-    <body>
     <div class="container">
         <div class="row">
             <div class="col-md-1"></div>
@@ -46,19 +45,23 @@ $user = User::findOne(Yii::$app->user->id)
             <div class="col-md-2"></div>
         </div>
     </div>
-    </body>
-
 <? else: ?>
-    <body>
     <div class="container">
         <div class="row">
             <div class="col-md-2">
                 <div class="user"
                      style="display: flex;justify-content: center;flex-direction: column;align-items: center;box-shadow: 0px 2px 7px 2px #949494;;padding: 1rem;border-radius: 1rem;">
-                    <div class="avatar"
-                         style="background-color: #222222;width: 14rem;height: 14rem;color: white;display:flex;justify-content: center;align-items: center;">
-                        Нет фото
-                    </div>
+                    <? if ($user->avatar == null): ?>
+                        <div class="avatar"
+                             style="background-color: #222222;width: 14rem;height: 14rem;color: white;display:flex;justify-content: center;align-items: center;">
+                            Нет фото
+                        </div>
+                    <? else: ?>
+                        <div class="photo"
+                             style="margin: 0 auto;display: flex;justify-content: center;align-items: center;">
+                            <?= Html::img('@web/' . $user->avatar, ['alt' => 'Ava']) ?>
+                        </div>
+                    <? endif; ?>
                     <span style="font-weight: bold;font-size: 2rem;"><i><?= $user->username ?></i></span>
                 </div>
             </div>
@@ -95,5 +98,4 @@ $user = User::findOne(Yii::$app->user->id)
             </div>
         </div>
     </div>
-    </body>
 <? endif; ?>
