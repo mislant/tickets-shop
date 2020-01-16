@@ -15,8 +15,9 @@ use kartik\datetime\DateTimePicker;
     ?>
     <div class="event-crete-form" style="display: flex;flex-direction: column;">
         <?= $form->field($model, 'title')->textInput(['placeholder' => 'Название мероприятия']) ?>
-        <?= $form->field($model, 'adress')->textInput(['placeholder' => 'Введите место проведения мероприятия']) ?>
-        <div id="map" style="width: 45rem;height: 27rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
+        <?= $form->field($model, 'adress')->hiddenInput(['class' => 'adress'])->label('Выберите место проведения мероприятия') ?>
+        <div id="map"
+             style="width: 45rem;height: 27rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
         <?= $form->field($model, 'date')->widget(DateTimePicker::className(), [
             'name' => 'check_issue_date',
             'value' => date('Y-M-d H:i:00'),
@@ -34,18 +35,54 @@ use kartik\datetime\DateTimePicker;
     ymaps.ready(init);
 
     function init() {
-        var Map = new ymaps.Map("map", {
-            center: [49.83, 73.16],
-            zoom: 10
-        });
+        var myPlacemark,
+            myMap = new ymaps.Map('map', {
+                center: [49.8333300, 73.1658000],
+                zoom: 11
+            }, {
+                searchControlProvider: 'yandex#search'
+            });
 
-        var searchControl = new ymaps.control.SearchControl({
-            options: {
-                provider: 'yandex#search'
+        myMap.events.add('click', function (e) {
+            var coords = e.get('coords');
+
+            if (myPlacemark) {
+                myPlacemark.geometry.setCoordinates(coords);
+            } else {
+                myPlacemark = createPlacemark(coords);
+                myMap.geoObjects.add(myPlacemark);
+                myPlacemark.events.add('dragend', function () {
+                    getAddress(myPlacemark.geometry.getCoordinates());
+                });
             }
+            getAddress(coords);
         });
 
-        myMap.controls.add(searchControl);
-        Map.setType('yandex#map');
+        function createPlacemark(coords) {
+            return new ymaps.Placemark(coords, {
+                iconCaption: 'поиск...'
+            }, {
+                preset: 'islands#violetDotIconWithCaption',
+                draggable: true
+            });
+        }
+
+        function getAddress(coords) {
+            myPlacemark.properties.set('iconCaption', 'поиск...');
+            ymaps.geocode(coords).then(function (res) {
+                var firstGeoObject = res.geoObjects.get(0);
+
+                myPlacemark.properties
+                    .set({
+                        iconCaption: [
+                            firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
+                            firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
+                        ].filter(Boolean).join(', '),
+                        balloonContent: firstGeoObject.getAddressLine()
+                    });
+                var adress = firstGeoObject.getAddressLine();
+                $('.adress').val(adress);
+            });
+        }
     }
 </script>
