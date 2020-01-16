@@ -2,8 +2,9 @@
 
 namespace app\controllers;
 
+use app\models\EventsTicket;
 use Yii;
-use yii\db\Exception;
+use yii\base\Model;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use app\models\Event;
@@ -51,23 +52,24 @@ class EventController extends Controller
 
     public function actionEventDetails($id)
     {
-        $event_model = new CreateEventForm();
-        $ticket_model = new CreateEventsTicketForm();
         $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
+        $events_tickets = EventsTicket::find()->where(['event_id' => $event->id])->all();
+        $event_model = new CreateEventForm();
         if (Yii::$app->user->can('updateOwnEvent', ['event' => $event])) {
             if ($event_model->load(Yii::$app->request->post())) {
                 if ($event_model->validate() && $event_model->update($id)) {
                     return $this->redirect(['/event/event-details', 'id' => $id]);
                 }
             }
-            if ($ticket_model->load(Yii::$app->request->post())) {
-                if ($ticket_model->validate() && $ticket_model->update($id)) {
-                    return $this->redirect(['/event/event-details', 'id' => $id]);
+            if (Model::loadMultiple($events_tickets, Yii::$app->request->post()) && Model::validateMultiple($events_tickets)){
+                foreach ($events_tickets as $event_ticket) {
+                    $event_ticket->update();
                 }
+                Event::countTotal($id);
+                return $this->redirect(['/event/event-details', 'id' => $id]);
             }
         }
-        return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'ticket_model'));
+        return $this->render('event_details', compact('event', 'events_tickets', 'event_model'));
     }
 
     public function actionEventCreate()

@@ -31,7 +31,7 @@ class BuyTicketForm extends Model
     public function buy()
     {
         if ($this->amount == 0) {
-            return false;
+            return true;
         } else {
             $user = Yii::$app->getUser()->getIdentity();
             $total = $this->cost * $this->amount;
@@ -53,8 +53,8 @@ class BuyTicketForm extends Model
                     $ticket->user_id = $user->id;
                     $ticket->event_id = $this->event_id;
                     $ticket->ticket_type_id = $this->ticket_type_id;
+                    $ticket->save();
                 }
-                $ticket->save();
                 $user->save();
                 $events_ticket->save();
                 return true;

@@ -6,7 +6,8 @@ use kartik\datetime\DateTimePicker;
 use app\models\TicketType;
 
 ?>
-<div class="event" style="display: flex;flex-direction: column;padding: 2rem;justify-content: center;align-items: flex-start">
+<div class="event"
+     style="display: flex;flex-direction: column;padding: 2rem;justify-content: center;align-items: flex-start">
     <h1>Просмотр мероприятия</h1>
     <table class="table" style="font-size: large">
         <thead class="thead-dark">
@@ -19,7 +20,9 @@ use app\models\TicketType;
         </thead>
         <tbody>
         <tr>
-            <? $form = ActiveForm::begin() ?>
+            <? $form = ActiveForm::begin([
+                    'id' => 'event-form'
+            ]) ?>
             <th><?= $event->id ?></th>
             <th><?= $form->field($event_model, 'title')->textInput(['value' => $event->title]) ?></th>
             <?php $event_model->date = $event->date ?>
@@ -31,7 +34,10 @@ use app\models\TicketType;
                     ]
                 ]) ?>
             </th>
-            <th><?= $form->field($event_model, 'adress')->textInput(['value' => $event->adress]) ?></th>
+            <th>
+                <div id="map" style="width: 35rem;height: 25rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
+                <?= $form->field($event_model, 'adress')->textInput(['value' => $event->adress])->label('Текущее место проведения мероприятия') ?>
+            </th>
         </tr>
         </tbody>
     </table>
@@ -42,6 +48,9 @@ use app\models\TicketType;
     <?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?>
     <?php ActiveForm::end() ?>
     <h2>Билеты мероприятия</h2>
+    <? $form = ActiveForm::begin([
+            'id' => 'ticket-form'
+    ]) ?>
     <table class="table">
         <thead class="thead-dark">
         <tr>
@@ -52,21 +61,21 @@ use app\models\TicketType;
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($events_tickets as $event_ticket): ?>
-            <? $form = ActiveForm::begin() ?>
+        <?php foreach ($events_tickets as $index => $events_ticket): ?>
+            <?php
+            $ticket_type = TicketType::findOne(['id' => $events_ticket->ticket_type_id]);
+            ?>
             <tr>
                 <th>
                     <?php
-                    $ticket_type = TicketType::findOne($event_ticket->ticket_type_id);
                     echo $ticket_type->type;
-                    echo $form->field($ticket_model, 'ticket_type_id')->hiddenInput(['value' => $ticket_type->id])->label('');
+                    echo $form->field($events_ticket, "[$index]events_ticket_type")->hiddenInput(['value' => $events_ticket->ticket_type_id])->label('');
                     ?>
                 </th>
-                <th><?= $form->field($ticket_model, 'cost')->textInput(['value' => $event_ticket->cost])->label('') ?></th>
-                <th><?= $form->field($ticket_model, 'amount')->textInput(['value' => $event_ticket->amount])->label('') ?></th>
-                <th><?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?></th>
+                <th><?= $form->field($events_ticket, "[$index]cost")->textInput(['value' => $events_ticket->cost])->label('') ?></th>
+                <th><?= $form->field($events_ticket, "[$index]amount")->textInput(['value' => $events_ticket->amount])->label('') ?></th>
+                <th></th>
             </tr>
-            <?php ActiveForm::end() ?>
         <?php endforeach; ?>
         </tbody>
         <tfoot>
@@ -82,8 +91,33 @@ use app\models\TicketType;
                 echo $total;
                 ?>
             </th>
-            <th><?=Html::a('Добавить',['event/events-ticket-create' ,'id' => $event->id])?></th>
+            <th>
+                <?= Html::a('Добавить', ['event/events-ticket-create', 'id' => $event->id]) ?>
+                <?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?>
+            </th>
         </tr>
         </tfoot>
     </table>
+    <?php ActiveForm::end() ?>
 </div>
+    <script>
+        var $form = $('#ticket-form');
+        $form.on('beforeSubmit', function() {
+            var data = $form.serialize();
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: data,
+                success: function (data) {
+                    // Implement successful
+                    alert('Success')
+                },
+                error: function(jqXHR, errMsg) {
+                    alert(errMsg);
+                }
+            });
+            return false; // prevent default submit
+        });
+    </script>
+
+<?php $this->registerJsFile(Yii::getAlias('@web') . 'js/yandex-api-map-adress.js', ['depends' => [\yii\web\JqueryAsset::className()]]); ?>
