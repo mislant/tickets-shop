@@ -7,12 +7,28 @@ use app\models\EventsTicket;
 
 ?>
     <div class="container">
-        <? if (Yii::$app->session->has('error_mesage')): ?>
+        <? if (Yii::$app->session->hasFlash('error_mesage')): ?>
             <div class="row">
                 <div class="col-md-9"
                      style="display: flex;justify-content: center;align-items: center;border:1px solid gray;border-radius: 2rem;padding: 2rem;background-color: darkred">
                     <p style="color: white;">В покупке билетов отказано. Возможно на вашем счету недастаточно <a
                                 href="/user/show-profile">средств</a>
+                    </p>
+                </div>
+            </div>
+        <? elseif (Yii::$app->session->hasFlash('empty_ticket_err_msg')): ?>
+            <div class="row">
+                <div class="col-md-9"
+                     style="display: flex;justify-content: center;align-items: center;border:1px solid gray;border-radius: 2rem;padding: 2rem;background-color: darkred">
+                    <p style="color: white;">В покупке билетов отказано. Вы не выбрали ни ондного билета!
+                    </p>
+                </div>
+            </div>
+        <? elseif (Yii::$app->session->hasFlash('success')): ?>
+            <div class="row">
+                <div class="col-md-9"
+                     style="display: flex;justify-content: center;align-items: center;border:1px solid gray;border-radius: 2rem;padding: 2rem;background-color: green">
+                    <p style="color: white;">Билеты куплены успешно
                     </p>
                 </div>
             </div>
@@ -40,7 +56,9 @@ use app\models\EventsTicket;
                     <h1 style="color: darkred">Мероприятие прошло</h1>
                 <? else: ?>
                     <h1>Доступные билеты</h1>
-                    <? $form = ActiveForm::begin() ?>
+                    <? $form = ActiveForm::begin([
+                    'id' => 'buy-form',
+                ]) ?>
                     <table class="table table-dark">
                         <thead class="thead-dark">
                         <tr>

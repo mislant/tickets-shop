@@ -100,24 +100,4 @@ use app\models\TicketType;
     </table>
     <?php ActiveForm::end() ?>
 </div>
-    <script>
-        var $form = $('#ticket-form');
-        $form.on('beforeSubmit', function() {
-            var data = $form.serialize();
-            $.ajax({
-                url: $form.attr('action'),
-                type: 'POST',
-                data: data,
-                success: function (data) {
-                    // Implement successful
-                    alert('Success')
-                },
-                error: function(jqXHR, errMsg) {
-                    alert(errMsg);
-                }
-            });
-            return false; // prevent default submit
-        });
-    </script>
-
-<?php $this->registerJsFile(Yii::getAlias('@web') . 'js/yandex-api-map-adress.js', ['depends' => [\yii\web\JqueryAsset::className()]]); ?>
+<?php $this->registerJsFile(Yii::getAlias('@web') . 'js/yandex-api-map-adress.js', ['depends' => [\yii\web\JqueryAsset::className(), \app\assets\AppAsset::className()]]); ?>

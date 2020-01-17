@@ -87,17 +87,11 @@ class UserController extends Controller
             $models[] = new BuyTicketForm();
             $models[$index]->ticket_type_id = $events_ticket->ticket_type_id;
         }
-        if (Model::loadMultiple($models,Yii::$app->request->post()) && Model::validateMultiple($models)) {
-            foreach ($models as $model) {
-                if ($model->buy()) {
-                } else {
-                    Yii::$app->session->setFlash('error_mesage', 'Вы не можете совершить данную операцию');
-                    return $this->redirect(['/user/buy-ticket', 'id' => $id]);
-                }
-            }
-            $this->redirect(['/user/buy-ticket', 'id' => $id]);
+        if(Model::loadMultiple($models,Yii::$app->request->post()) && Model::validateMultiple($models))
+        {
+            return $this->redirect(['/event/buy-confirm' , 'id' => $id, 'models' => $models]);
         }
-        return $this->render('buy-ticket', compact('models', 'event'));
+        return $this->render('ticket_office', compact('models', 'event'));
     }
 
     public function actionReturnTicket($id)

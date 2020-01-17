@@ -5,6 +5,9 @@ use app\models\TicketType;
 use app\models\Event;
 use yii\widgets\LinkPager;
 
+/* @array $user app\models\User */
+/* @array $users_ticket app\models\Ticket */
+
 ?>
 <body>
 <div class="box" style="display: flex;flex-direction: column;padding-left: 2rem;">
