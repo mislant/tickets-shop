@@ -57,23 +57,33 @@ class EventController extends Controller
     public function actionEventDetails($id)
     {
         $event = Event::findOne($id);
-        $events_tickets = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
-        $event_model = new CreateEventForm();
         if (Yii::$app->user->can('updateOwnEvent', ['event' => $event])) {
-            if ($event_model->load(Yii::$app->request->post())) {
-                if ($event_model->validate() && $event_model->update($id)) {
-                    return $this->redirect(['/event/event-details', 'id' => $id]);
+            $events_tickets = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
+            $event_model = new CreateEventForm();
+            if (Yii::$app->request->isAjax) {
+                if ($event_model->load(Yii::$app->request->post())) {
+                    if ($event_model->validate() && $event_model->update($id)) {
+                        return $this->redirect(['/event/event-details', 'id' => $id]);
+                    }
                 }
-            }
-            if (Model::loadMultiple($events_tickets, Yii::$app->request->post()) && Model::validateMultiple($events_tickets)) {
-                foreach ($events_tickets as $event_ticket) {
-                    $event_ticket->update();
+                if (Model::loadMultiple($events_tickets, Yii::$app->request->post()) && Model::validateMultiple($events_tickets)) {
+                    foreach ($events_tickets as $events_ticket) {
+                        $events_ticket->update();
+                    }
+                    Event::countTotal($id);
+                    $count = 0;
+                    foreach ($events_tickets as $events_ticket) {
+                        $count += $events_ticket->amount;
+                    }
+                    return $this->renderAjax('event_details', compact('event', 'events_tickets', 'event_model', 'count'));
                 }
-                Event::countTotal($id);
-                return $this->redirect(['/event/event-details', 'id' => $id]);
             }
         }
-        return $this->render('event_details', compact('event', 'events_tickets', 'event_model'));
+        $count = 0;
+        foreach ($events_tickets as $events_ticket) {
+            $count += $events_ticket->amount;
+        }
+        return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'count'));
     }
 
     public function actionEventCreate()

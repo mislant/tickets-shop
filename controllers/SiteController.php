@@ -6,6 +6,7 @@ use app\models\AuthAssignment;
 use app\models\AuthItem;
 use app\models\Event;
 use app\models\User;
+use app\models\AjaxTest;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\data\Pagination;
@@ -25,7 +26,7 @@ class   SiteController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['admin'],
-                        'actions' => ['set-role', 'test-map'],
+                        'actions' => ['set-role', 'test','test-ajax'],
                     ],
                     [
                         'allow' => true,
@@ -64,7 +65,7 @@ class   SiteController extends Controller
                 'attributes' => ['id', 'username'],
             ],
         ]);
-        return $this->render('show-role',compact('dataProvider'));
+        return $this->render('show-role', compact('dataProvider'));
     }
 
     public function actionSetRole($id)
@@ -79,8 +80,41 @@ class   SiteController extends Controller
         return $this->render('set-role', compact('data', 'model', 'role'));
     }
 
-    public function actionTestMap()
+    public function actionTest()
     {
-        return $this->render('test');
+        $model = new AjaxTest();
+        return $this->render('test',compact('model'));
+    }
+
+    public function actionTestAjax()
+    {
+        // Создаём экземпляр модели.
+        $model = new AjaxTest();
+        // Устанавливаем формат ответа JSON
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        // Если пришёл AJAX запрос
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            // Получаем данные модели из запроса
+            if ($model->load($data)) {
+                //Если всё успешно, отправляем ответ с данными
+                return [
+                    "data" => $model,
+                    "error" => null
+                ];
+            } else {
+                // Если нет, отправляем ответ с сообщением об ошибке
+                return [
+                    "data" => null,
+                    "error" => "error1"
+                ];
+            }
+        } else {
+            // Если это не AJAX запрос, отправляем ответ с сообщением об ошибке
+            return [
+                "data" => null,
+                "error" => "error2"
+            ];
+        }
     }
 }

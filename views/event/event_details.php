@@ -13,52 +13,55 @@ use app\assets\AppAsset;
 use yii\web\JqueryAsset;
 
 ?>
-    <div class="event"
-         style="display: flex;flex-direction: column;padding: 2rem;justify-content: center;align-items: flex-start">
-        <h1>Просмотр мероприятия</h1>
-        <table class="table" style="font-size: large">
-            <thead class="thead-dark">
-            <tr>
-                <th>#</th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <? $form = ActiveForm::begin([
-                    'id' => 'event-form'
+<div class="event"
+     style="display: flex;flex-direction: column;padding: 2rem;justify-content: center;align-items: flex-start">
+    <h1>Просмотр мероприятия</h1>
+    <table class="table" style="font-size: large">
+        <thead class="thead-dark">
+        <tr>
+            <th>#</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <? $form = ActiveForm::begin([
+                'id' => 'event-form'
+            ]) ?>
+            <th><?= $event->id ?></th>
+            <th><?= $form->field($event_model, 'title')->textInput(['value' => $event->title]) ?></th>
+            <th>
+                <? $event_model->date = $event->date ?>
+                <?= $form->field($event_model, 'date')->widget(DateTimePicker::className(), [
+                    'options' => ['placeholder' => $event->date],
+                    'pluginOptions' => [
+                        'format' => 'yyyy-mm-dd H:i:00',
+                        'todayHighlight' => true
+                    ]
                 ]) ?>
-                <th><?= $event->id ?></th>
-                <th><?= $form->field($event_model, 'title')->textInput(['value' => $event->title]) ?></th>
-                <th>
-                    <? $event_model->date = $event->date ?>
-                    <?= $form->field($event_model, 'date')->widget(DateTimePicker::className(), [
-                        'options' => ['placeholder' => $event->date],
-                        'pluginOptions' => [
-                            'format' => 'yyyy-mm-dd H:i:00',
-                            'todayHighlight' => true
-                        ]
-                    ]) ?>
-                </th>
-                <th>
-                    <div id="map"
-                         style="width: 35rem;height: 25rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
-                    <?= $form->field($event_model, 'adress')->textInput(['value' => $event->adress])->label('Текущее место проведения мероприятия') ?>
-                </th>
-            </tr>
-            </tbody>
-        </table>
-        <div class="event-info" style="width: 80%;">
-            <h2>Описание</h2>
-            <?= $form->field($event_model, 'description')->textarea(['rows' => '6', 'value' => $event->description])->label('') ?>
-        </div>
-        <?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?>
-        <?php ActiveForm::end() ?>
+            </th>
+            <th>
+                <div id="map"
+                     style="width: 35rem;height: 25rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
+                <?= $form->field($event_model, 'adress')->textInput(['value' => $event->adress])->label('Текущее место проведения мероприятия') ?>
+            </th>
+        </tr>
+        </tbody>
+    </table>
+    <div class="event-info" style="width: 80%;">
+        <h2>Описание</h2>
+        <?= $form->field($event_model, 'description')->textarea(['rows' => '6', 'value' => $event->description])->label('') ?>
+    </div>
+    <?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?>
+    <? ActiveForm::end() ?>
+    <div class="ticket-inf">
         <h2>Билеты мероприятия</h2>
         <? $form = ActiveForm::begin([
-            'id' => 'ticket-form'
+            'id' => 'ticket-form',
+            'options' => ['class' => 'ticket-form'],
+            'enableAjaxValidation' => 'false'
         ]) ?>
         <table class="table">
             <thead class="thead-dark">
@@ -91,15 +94,7 @@ use yii\web\JqueryAsset;
             <tr>
                 <th></th>
                 <th>Всего</th>
-                <th>
-                    <?php
-                    $total = 0;
-                    foreach ($events_tickets as $event_ticket) {
-                        $total += $event_ticket->amount;
-                    }
-                    echo $total;
-                    ?>
-                </th>
+                <th><?= $count ?></th>
                 <th>
                     <?= Html::a('Добавить', ['event/events-ticket-create', 'id' => $event->id]) ?>
                     <?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?>
@@ -109,4 +104,23 @@ use yii\web\JqueryAsset;
         </table>
         <?php ActiveForm::end() ?>
     </div>
+</div>
+<script>
+    $('#ticket-form').on('beforeSubmit', function () {
+        var data = $(this).serialize();
+        console.log(data)
+        $.ajax({
+            url: 'event-details',
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                $('#ticket_inf').html(response);
+            },
+            error: function () {
+                alert('error')
+            }
+        });
+    })
+</script>
 <?php $this->registerJsFile(Yii::getAlias('@web') . 'js/yandex-api-map-adress.js', ['depends' => [JqueryAsset::className(), AppAsset::className()]]); ?>
+
