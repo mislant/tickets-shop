@@ -11,6 +11,11 @@ class TicketType extends ActiveRecord
         return '{{%ticket_type}}';
     }
 
+    public function getEventsTicket()
+    {
+        return $this->hasOne(EventsTicket::className(), ['ticket_type_id' => 'id']);
+    }
+
     public function attributeLabels()
     {
         return

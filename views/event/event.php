@@ -1,9 +1,10 @@
 <?php
 
+/**
+ * @var array $model
+ */
+
 use yii\helpers\Html;
-use yii\data\ActiveDataProvider;
-use app\models\Event;
-use app\models\EventSearch;
 use yii\grid\GridView;
 
 ?>
@@ -16,10 +17,6 @@ if (Yii::$app->session->has('error_message')) {
     <?php echo Html::a('Создать мероприятие', ['event/event-create'], ['class' => 'btn btn-primary pull-right']); ?>
 </div>
 <hr>
-<?php
-$model = new EventSearch();
-?>
-
 <?= GridView::widget([
 
     'dataProvider' => $model->search(Yii::$app->request->queryParams),
@@ -36,7 +33,7 @@ $model = new EventSearch();
             'template' => '{view} {delete}',
             'buttons' => [
                 'view' => function ($url, $model, $key) {
-                        return Html::a('<span class="glyphicon glyphicon-pencil"></span>',['/event/event-details','id' => $model->id]);
+                    return Html::a('<span class="glyphicon glyphicon-pencil"></span>', ['/event/event-details', 'id' => $model->id]);
                 },
                 'delete' => function ($url, $model, $key) {
                     return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/event-delete', 'id' => $model->id]);

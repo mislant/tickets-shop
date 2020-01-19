@@ -1,9 +1,11 @@
 <?php
 
+/* @var array $models
+ * @var array $event
+ */
+
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
-use app\models\TicketType;
-use app\models\EventsTicket;
 
 ?>
     <div class="container">
@@ -12,7 +14,7 @@ use app\models\EventsTicket;
                 <div class="col-md-9"
                      style="display: flex;justify-content: center;align-items: center;border:1px solid gray;border-radius: 2rem;padding: 2rem;background-color: darkred">
                     <p style="color: white;">В покупке билетов отказано. Возможно на вашем счету недастаточно <a
-                                href="/user/show-profile">средств</a>
+                                href="/user/show-profile">средств?</a>
                     </p>
                 </div>
             </div>
@@ -21,6 +23,14 @@ use app\models\EventsTicket;
                 <div class="col-md-9"
                      style="display: flex;justify-content: center;align-items: center;border:1px solid gray;border-radius: 2rem;padding: 2rem;background-color: darkred">
                     <p style="color: white;">В покупке билетов отказано. Вы не выбрали ни ондного билета!
+                    </p>
+                </div>
+            </div>
+        <? elseif (Yii::$app->session->hasFlash('ticket_err_msg')): ?>
+            <div class="row">
+                <div class="col-md-9"
+                     style="display: flex;justify-content: center;align-items: center;border:1px solid gray;border-radius: 2rem;padding: 2rem;background-color: darkred">
+                    <p style="color: white;">В покупке билетов отказано. Вы выбрали неверное количесвто билетов!
                     </p>
                 </div>
             </div>
@@ -74,36 +84,43 @@ use app\models\EventsTicket;
                         <? foreach ($models as $index => $model): ?>
                             <tr>
                                 <th>
-                                    <?= $form->field($model, "[$index]event_id")->hiddenInput(['value' => $event->id])->label('') ?>
+                                    <?= $form->field($model, "[$index]event_id")
+                                        ->hiddenInput(['value' => $event->id])
+                                        ->label('') ?>
                                 </th>
                                 <th>
-                                    <?php
-                                    $type = TicketType::findOne($model->ticket_type_id);
-                                    echo $type->type;
-                                    echo $form->field($model, "[$index]ticket_type_id")->hiddenInput(['value' => $type->id])->label('');
-                                    ?>
+                                    <?= $model->ticket_type; ?>
+                                    <?= $form->field($model, "[$index]ticket_type_id")
+                                        ->hiddenInput(['value' => $model->ticket_type_id])
+                                        ->label(''); ?>
                                 </th>
                                 <th>
-                                    <?php
-                                    $ticket = EventsTicket::findOne(['event_id' => $event->id, 'ticket_type_id' => $model->ticket_type_id]);
-                                    echo $ticket->amount;
-                                    ?>
+                                    <?= $model->all ?>
+                                    <?= $form->field($model, "[$index]ticket_type")
+                                        ->hiddenInput(['value' => $model->ticket_type])
+                                        ->label('') ?>
                                 </th>
                                 <th>
                                     <div class="number"
                                          style="width: 12.4rem;height:4rem;display: flex;justify-content: center;align-items: center;">
                                         <span class="minus btn" style="cursor: pointer">-</span>
-                                        <?= $form->field($model, "[$index]amount")->textInput(['value' => 0, 'size' => 1])->label('') ?>
+                                        <?= $form->field($model, "[$index]amount")
+                                            ->textInput(['value' => 0, 'size' => 1])
+                                            ->label('') ?>
                                         <span class="plus btn" style="cursor: pointer">+</span>
                                     </div>
                                 </th>
                                 <th>
-                                    <?php
-                                    echo $ticket->cost;
-                                    echo $form->field($model, "[$index]cost")->hiddenInput(['value' => $ticket->cost])->label('');
-                                    ?>
+                                    <?= $model->cost; ?>
+                                    <?= $form->field($model, "[$index]cost")
+                                        ->hiddenInput(['value' => $model->cost])
+                                        ->label(''); ?>
                                 </th>
-                                <th></th>
+                                <th>
+                                    <?= $form->field($model, "[$index]all")
+                                        ->hiddenInput(['value' => $model->all])
+                                        ->label('') ?>
+                                </th>
                             </tr>
                         <? endforeach; ?>
                         </tbody>
@@ -115,12 +132,7 @@ use app\models\EventsTicket;
                             <th></th>
                             <th></th>
                             <th>
-                                <?= Html::submitButton(
-                                    'Купить',
-                                    [//'data' => ['confirm' => 'Вы действительно хотите купить эти билеты?'],
-                                        'class' => 'btn btn-success'
-                                    ])
-                                ?>
+                                <?= Html::submitButton('Купить', ['class' => 'btn btn-success']) ?>
                             </th>
                         </tr>
                         </tfoot>

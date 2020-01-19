@@ -45,7 +45,7 @@ function init() {
                     balloonContent: firstGeoObject.getAddressLine()
                 });
             var adress = firstGeoObject.getAddressLine();
-            $('.adress').val(adress);
+            $('#adress').val(adress);
         });
     }
 }

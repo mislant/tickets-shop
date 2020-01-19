@@ -16,6 +16,11 @@ class EventsTicket extends ActiveRecord
         return $this->hasOne(Event::className(), ['id' => 'event_id']);
     }
 
+    public function getTicket_type()
+    {
+        return $this->hasOne(TicketType::className(),['id' => 'ticket_type_id']);
+    }
+
     public function attributeLabels()
     {
         return
@@ -45,5 +50,10 @@ class EventsTicket extends ActiveRecord
             }
         }
         return true;
+    }
+
+    public function getTicketTypeName()
+    {
+        return TicketType::findOne(['id' => $this->ticket_type_id])->type;
     }
 }

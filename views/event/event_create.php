@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @var array $model
+ */
+
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\datetime\DateTimePicker;
@@ -15,7 +19,7 @@ use kartik\datetime\DateTimePicker;
     ?>
     <div class="event-crete-form" style="display: flex;flex-direction: column;">
         <?= $form->field($model, 'title')->textInput(['placeholder' => 'Название мероприятия']) ?>
-        <?= $form->field($model, 'adress')->hiddenInput(['class' => 'adress'])->label('Выберите место проведения мероприятия') ?>
+        <?= $form->field($model, 'adress')->hiddenInput(['id' => 'adress'])->label('Выберите место проведения мероприятия') ?>
         <div id="map"
              style="width: 45rem;height: 27rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
         <?= $form->field($model, 'date')->widget(DateTimePicker::className(), [

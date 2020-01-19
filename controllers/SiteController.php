@@ -3,11 +3,14 @@
 namespace app\controllers;
 
 use app\models\AuthAssignment;
+use app\models\AuthItem;
 use app\models\Event;
 use app\models\User;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\data\Pagination;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 
 
@@ -43,24 +46,37 @@ class   SiteController extends Controller
     {
         $q = Event::find()->orderBy(['date' => SORT_DESC]);
         $countQuery = clone $q;
-        $pages = new Pagination(['totalCount' =>$countQuery->count(), 'pageSize' => 5]);
+        $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => 5]);
         $events = $q->offset($pages->offset)->limit($pages->limit)->all();
-        return $this->render('index',compact('events','pages'));
+        $user = Yii::$app->getUser()->getIdentity();
+        return $this->render('index', compact('events', 'pages', 'user'));
     }
 
     public function actionShowRole()
     {
-        return $this->render('show-role');
+        $query = User::find();
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => 20,
+            ],
+            'sort' => [
+                'attributes' => ['id', 'username'],
+            ],
+        ]);
+        return $this->render('show-role',compact('dataProvider'));
     }
 
     public function actionSetRole($id)
     {
+        $roles = AuthItem::GiveRoles();
+        $role = ArrayHelper::map($roles, 'name', 'name');
         $data = User::getUsernameAndId($id);
         $model = new AuthAssignment();
         if ($model->load(Yii::$app->request->post()) && $model->SaveUserRole($id)) {
             return $this->redirect('/site/show-role');
         }
-        return $this->render('set-role', compact('data', 'model'));
+        return $this->render('set-role', compact('data', 'model', 'role'));
     }
 
     public function actionTestMap()

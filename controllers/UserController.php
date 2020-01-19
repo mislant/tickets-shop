@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\BuyTicketForm;
 use app\models\Event;
 use app\models\EventSearch;
+use app\models\EventsTicket;
 use app\models\Ticket;
 use app\models\UserProfile;
 use yii\data\Sort;
@@ -47,8 +48,8 @@ class UserController extends Controller
     {
         if (!Yii::$app->user->isGuest) {
             Yii::$app->user->logout();
-            return $this->redirect('log-in');
         }
+        return $this->redirect('log-in');
     }
 
     public function actionShowProfile()
@@ -63,7 +64,7 @@ class UserController extends Controller
         $countQuery = clone $query;
         $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => 7]);
         $users_ticket = $query->offset($pages->offset)->limit($pages->limit)->all();
-        return $this->render('user-profile', compact('user', 'users_ticket','pages','sort'));
+        return $this->render('user-profile', compact('user', 'users_ticket', 'pages', 'sort'));
 
     }
 
@@ -82,14 +83,20 @@ class UserController extends Controller
     public function actionBuyTicket($id)
     {
         $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
-        foreach ($events_tickets as $index => $events_ticket){
+        $events_tickets = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
+        if (isset($events_tickets)) {
             $models[] = new BuyTicketForm();
-            $models[$index]->ticket_type_id = $events_ticket->ticket_type_id;
+        } else {
+            foreach ($events_tickets as $index => $events_ticket) {
+                $models[] = new BuyTicketForm();
+                $models[$index]->ticket_type_id = $events_ticket->ticket_type->id;
+                $models[$index]->ticket_type = $events_ticket->ticket_type->type;
+                $models[$index]->cost = $events_ticket->cost;
+                $models[$index]->all = $events_ticket->amount;
+            }
         }
-        if(Model::loadMultiple($models,Yii::$app->request->post()) && Model::validateMultiple($models))
-        {
-            return $this->redirect(['/event/buy-confirm' , 'id' => $id, 'models' => $models]);
+        if (Model::loadMultiple($models, Yii::$app->request->post()) && Model::validateMultiple($models)) {
+            return $this->redirect(['/event/buy-confirm', 'id' => $id, 'models' => $models]);
         }
         return $this->render('ticket_office', compact('models', 'event'));
     }
@@ -108,7 +115,7 @@ class UserController extends Controller
         $user = Yii::$app->getUser()->getIdentity();
         $model = new EventSearch();
 
-        return $this->render('manager-tools',compact('user','model'));
+        return $this->render('manager-tools', compact('user', 'model'));
     }
 
 

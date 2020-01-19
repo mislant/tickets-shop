@@ -10,13 +10,15 @@ class BuyTicketForm extends Model
 {
     public $event_id;
     public $ticket_type_id;
+    public $ticket_type;
     public $amount;
+    public $all;
     public $cost;
 
     public function rules()
     {
         return [
-            [['event_id', 'ticket_type_id', 'cost'], 'safe'],
+            [['event_id', 'ticket_type_id', 'cost','ticket_type','all'], 'safe'],
             ['amount', 'string', 'max' => 1000000]
         ];
     }
@@ -24,7 +26,7 @@ class BuyTicketForm extends Model
     public function attributeLabels()
     {
         return [
-            'amount' => 'Количесвто билетов',
+            'amount' => 'Количество билетов',
         ];
     }
 

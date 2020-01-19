@@ -1,6 +1,11 @@
 <?php
 
-use app\models\TicketType;
+/**
+ * @var array $models
+ * @var int $id ;
+ *
+ */
+
 use yii\helpers\Html;
 
 ?>
@@ -22,12 +27,7 @@ use yii\helpers\Html;
             <? if ($model['amount'] > 0): ?>
                 <tbody>
                 <tr>
-                    <th>
-                        <?php
-                        $type = TicketType::findOne(['id' => $model['ticket_type_id']]);
-                        echo $type->type;
-                        ?>
-                    </th>
+                    <th><?= $model['ticket_type'] ?></th>
                     <th><?= $model['amount'] ?></th>
                     <th><?= $model['cost'] ?></th>
                     <th>
@@ -48,7 +48,7 @@ use yii\helpers\Html;
         </tfoot>
     </table>
     <div class="buttons-container" style="width: 100%;display: flex;justify-content: space-around">
-        <?=Html::a('Отказать',['user/buy-ticket'],['class' => 'btn btn-info'])?>
-        <?=Html::a('Подтвердить покупку',['/event/buy-ticket', 'models' => $models,'id' => $id],['class' => 'btn btn-success'])?>
+        <?= Html::a('Отказать', ['user/buy-ticket', 'id' => $id], ['class' => 'btn btn-info']) ?>
+        <?= Html::a('Подтвердить покупку', ['/event/buy-ticket', 'models' => $models, 'id' => $id], ['class' => 'btn btn-success']) ?>
     </div>
 </div>

@@ -1,12 +1,12 @@
 <?php
+/**
+ * @var array $users_ticket
+ */
 
 use yii\helpers\Html;
 use app\models\TicketType;
 use app\models\Event;
 use yii\widgets\LinkPager;
-
-/* @array $user app\models\User */
-/* @array $users_ticket app\models\Ticket */
 
 ?>
 <body>

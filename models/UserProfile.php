@@ -5,6 +5,7 @@ namespace app\models;
 
 use yii\base\Model;
 use Yii;
+use yii\helpers\Url;
 use yii\web\UploadedFile;
 
 class UserProfile extends Model
