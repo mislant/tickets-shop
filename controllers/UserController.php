@@ -5,15 +5,17 @@ namespace app\controllers;
 use app\models\BuyTicketForm;
 use app\models\Event;
 use app\models\EventSearch;
+use app\models\EventsTicket;
 use app\models\Ticket;
 use app\models\UserProfile;
-use app\models\UsersTicket;
+use yii\data\Sort;
 use Yii;
+use yii\base\Model;
+use yii\data\Pagination;
 use yii\web\Controller;
 use app\models\SignupForm;
 use app\models\LoginForm;
 use app\models\User;
-use yii\web\UploadedFile;
 
 class UserController extends Controller
 {
@@ -46,15 +48,24 @@ class UserController extends Controller
     {
         if (!Yii::$app->user->isGuest) {
             Yii::$app->user->logout();
-            return $this->redirect('log-in');
         }
+        return $this->redirect('log-in');
     }
 
     public function actionShowProfile()
     {
         $user = Yii::$app->getUser()->getIdentity();
-        $users_ticket = $user->ticket;
-        return $this->render('user-profile', compact('user', 'users_ticket'));
+        $sort = new Sort([
+            'attributes' => [
+                'event_id'
+            ],
+        ]);
+        $query = Ticket::find()->where(['user_id' => $user->id])->orderBy($sort->orders);
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => 7]);
+        $users_ticket = $query->offset($pages->offset)->limit($pages->limit)->all();
+        return $this->render('user-profile', compact('user', 'users_ticket', 'pages', 'sort'));
+
     }
 
     public function actionEditProfile()
@@ -72,26 +83,31 @@ class UserController extends Controller
     public function actionBuyTicket($id)
     {
         $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
-        $model = new BuyTicketForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->buy()) {
-                $this->redirect(['/user/buy-ticket', 'id' => $id]);
-            } else {
-                Yii::$app->session->setFlash('error_mesage', 'Вы не можете совершить данную операцию');
-                return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+        $events_tickets = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
+        if (isset($events_tickets)) {
+            $models[] = new BuyTicketForm();
+        } else {
+            foreach ($events_tickets as $index => $events_ticket) {
+                $models[] = new BuyTicketForm();
+                $models[$index]->ticket_type_id = $events_ticket->ticket_type->id;
+                $models[$index]->ticket_type = $events_ticket->ticket_type->type;
+                $models[$index]->cost = $events_ticket->cost;
+                $models[$index]->all = $events_ticket->amount;
             }
         }
-        return $this->render('buy-ticket', compact('model', 'event', 'events_tickets'));
+        if (Model::loadMultiple($models, Yii::$app->request->post()) && Model::validateMultiple($models)) {
+            return $this->redirect(['/event/buy-confirm', 'id' => $id, 'models' => $models]);
+        }
+        return $this->render('ticket_office', compact('models', 'event'));
     }
 
     public function actionReturnTicket($id)
     {
         if (Ticket::back($id)) {
-            return $this->redirect('/user/personal-list');
+            return $this->redirect('/user/show-profile');
         }
         Yii::$app->session->setFlash('error_message', 'Ошибка');
-        return $this->redirect('/user/personal-list');
+        return $this->redirect('/user/show-profile');
     }
 
     public function actionShowManagerTools()
@@ -99,7 +115,7 @@ class UserController extends Controller
         $user = Yii::$app->getUser()->getIdentity();
         $model = new EventSearch();
 
-        return $this->render('manager-tools',compact('user','model'));
+        return $this->render('manager-tools', compact('user', 'model'));
     }
 
 

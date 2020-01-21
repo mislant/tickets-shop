@@ -41,15 +41,6 @@ class CreateEventsTicketForm extends Model
         return $tickets->save();
     }
 
-    public function update($id)
-    {
-        $events_ticket = EventsTicket::findOne(['event_id' => $id, 'ticket_type_id' => $this->ticket_type_id]);
-        $events_ticket->cost = $this->cost;
-        $events_ticket->amount = $this->amount;
-        $events_ticket->save();
-        return Event::countTotal($id);
-    }
-
     public function uniqueTicketType($attribute, $params)
     {
         if (!$this->hasErrors()) {

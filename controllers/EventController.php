@@ -2,9 +2,14 @@
 
 namespace app\controllers;
 
+use app\models\BuyTicketForm;
+use app\models\EventSearch;
+use app\models\EventsTicket;
 use Yii;
-use yii\db\Exception;
+use yii\base\Model;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use app\models\Event;
 use app\models\CreateEventForm;
@@ -33,7 +38,7 @@ class EventController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['user', 'manager', 'admin'],
-                        'actions' => ['events-list', 'event-details'],
+                        'actions' => ['events-list', 'event-details', 'buy-confirm', 'buy-ticket'],
                     ],
                 ],
             ],
@@ -45,29 +50,40 @@ class EventController extends Controller
 
     public function actionEventsList()
     {
-        $data = Event::GiveAll();
-        return $this->render('event', compact('data'));
+        $model = new EventSearch();
+        return $this->render('event', compact('model'));
     }
 
     public function actionEventDetails($id)
     {
-        $event_model = new CreateEventForm();
-        $ticket_model = new CreateEventsTicketForm();
         $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
         if (Yii::$app->user->can('updateOwnEvent', ['event' => $event])) {
-            if ($event_model->load(Yii::$app->request->post())) {
-                if ($event_model->validate() && $event_model->update($id)) {
-                    return $this->redirect(['/event/event-details', 'id' => $id]);
+            $events_tickets = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
+            $event_model = new CreateEventForm();
+            if (Yii::$app->request->isAjax) {
+                if ($event_model->load(Yii::$app->request->post())) {
+                    if ($event_model->validate() && $event_model->update($id)) {
+                        return $this->redirect(['/event/event-details', 'id' => $id]);
+                    }
                 }
-            }
-            if ($ticket_model->load(Yii::$app->request->post())) {
-                if ($ticket_model->validate() && $ticket_model->update($id)) {
-                    return $this->redirect(['/event/event-details', 'id' => $id]);
+                if (Model::loadMultiple($events_tickets, Yii::$app->request->post()) && Model::validateMultiple($events_tickets)) {
+                    foreach ($events_tickets as $events_ticket) {
+                        $events_ticket->update();
+                    }
+                    Event::countTotal($id);
+                    $count = 0;
+                    foreach ($events_tickets as $events_ticket) {
+                        $count += $events_ticket->amount;
+                    }
+                    return $this->renderAjax('event_details', compact('event', 'events_tickets', 'event_model', 'count'));
                 }
             }
         }
-        return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'ticket_model'));
+        $count = 0;
+        foreach ($events_tickets as $events_ticket) {
+            $count += $events_ticket->amount;
+        }
+        return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'count'));
     }
 
     public function actionEventCreate()
@@ -97,13 +113,15 @@ class EventController extends Controller
     {
         $model = new CreateEventsTicketForm();
         $model->event_id = $id;
+        $ticket_types = TicketType::find()->all();
+        $type = ArrayHelper::map($ticket_types, 'id', 'type');
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate() && $model->create()) {
                 Event::countTotal($id);
                 return $this->redirect(['events-ticket-create', 'id' => $id]);
             }
         }
-        return $this->render('events_ticket_create', compact('model'));
+        return $this->render('events_ticket_create', compact('model', 'type'));
     }
 
 
@@ -114,8 +132,14 @@ class EventController extends Controller
 
     public function actionTicketTypeList()
     {
-        $data = TicketType::GiveAll();
-        return $this->render('ticket_type', compact('data'));
+        $query = TicketType::find();
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => '15',
+            ]
+        ]);
+        return $this->render('ticket_type', compact('dataProvider'));
     }
 
     public function actionTicketTypeCreate()
@@ -136,11 +160,48 @@ class EventController extends Controller
     }
 
 
-
     /// =================TicketActionEnd============================
+    ///
+    /// ==============BuyingTransactions============================
 
+    public function actionBuyConfirm(array $models, $id)
+    {
+        foreach ($models as $index => $model) {
+            if ($model['amount'] == 0) {
+                unset($models[$index]);
+            } elseif ($model['amount'] < 0) {
+                Yii::$app->session->setFlash('ticket_err_msg', 'Не верное количество билетов');
+                return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+            } elseif ($model['amount'] > $model['all']) {
+                Yii::$app->session->setFlash('ticket_err_msg', 'Вы выбрали больше билетов чем есть');
+                return $this->redirect(['user/buy-ticket', 'id' => $id]);
+            }
+        }
+        if (empty($models)) {
+            Yii::$app->session->setFlash('empty_ticket_err_msg', 'Вы не выбрали ни одного билета');
+            return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+        }
+        return $this->render('buy-confirm', compact('models', 'id'));
+    }
 
-    ///==============================================================
+    public function actionBuyTicket(array $models, $id)
+    {
+        foreach ($models as $model) {
+            $form = new BuyTicketForm();
+            $form->attributes = $model;
+            if ($form->buy()) {
+            } else {
+                Yii::$app->session->setFlash('error_mesage', 'Вы не можете совершить данную операцию');
+                return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+            }
+        }
+        Yii::$app->session->setFlash('success', 'Успех');
+        return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+    }
+
+    /// ======================================================================
+    ///
+    /// ======================================================================
 
     public function actionAddevent()
     {

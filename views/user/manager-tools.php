@@ -16,7 +16,7 @@ use yii\helpers\Html;
     </div>
     <div class="manager-panel-body">
         <?= GridView::widget([
-            'dataProvider' => $model->search(Yii::$app->request->queryParams,$user->id),
+            'dataProvider' => $model->search(Yii::$app->request->queryParams, $user->id),
             'filterModel' => $model,
             'columns' => [
                 ['class' => 'yii\grid\SerialColumn'],

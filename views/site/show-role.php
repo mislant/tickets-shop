@@ -1,26 +1,14 @@
 <?php
 /**
- * @var $model User
+ * @var array $dataProvider
  */
 
-use app\models\User;
-use yii\data\ActiveDataProvider;
 use yii\grid\GridView;
+use yii\helpers\Html;
 
 ?>
 
-<?php
-$query = User::find();
-$dataProvider = new ActiveDataProvider([
-    'query' => $query,
-    'pagination' => [
-        'pageSize' => 20,
-    ],
-    'sort' => [
-        'attributes' => ['id', 'username'],
-    ],
-])
-?>
+
 
 <?= GridView::widget(
     [
@@ -40,7 +28,7 @@ $dataProvider = new ActiveDataProvider([
                 'template' => '{update}',
                 'buttons' => [
                     'update' => function ($url, $model) {
-                        return \yii\helpers\Html::a('<span class = "glyphicon glyphicon-refresh"></span>', ['/site/set-role', 'id' => $model['id']]);
+                        return Html::a('<span class = "glyphicon glyphicon-refresh"></span>', ['/site/set-role', 'id' => $model['id']]);
                     }
                 ]
             ]

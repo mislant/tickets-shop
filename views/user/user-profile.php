@@ -1,8 +1,12 @@
 <?php
+/**
+ * @var array $users_ticket
+ */
 
 use yii\helpers\Html;
 use app\models\TicketType;
 use app\models\Event;
+use yii\widgets\LinkPager;
 
 ?>
 <body>
@@ -46,6 +50,7 @@ use app\models\Event;
     </div>
     <div class="user-tickets">
         <h2>Купленные билеты</h2>
+        <?= $sort->link('event_id')?>
         <? foreach ($users_ticket as $ticket): ?>
             <?php
             $event = Event::findOne($ticket->event_id);
@@ -67,7 +72,12 @@ use app\models\Event;
                         <tbody>
                         <tr>
                             <th><?= $event->title ?></th>
-                            <th><?= $event->date ?></th>
+                            <th>
+                                <?php
+                                Yii::$app->formatter->locale = 'ru-RU';
+                                echo Yii::$app->formatter->asDatetime($event->date)
+                                ?>
+                            </th>
                             <th><?= $event->adress ?></th>
                         </tr>
                         </tbody>
@@ -85,6 +95,7 @@ use app\models\Event;
                 </div>
             <? endif; ?>
         <? endforeach; ?>
+        <?=LinkPager::widget(['pagination' => $pages])?>
     </div>
 </div>
 </body>

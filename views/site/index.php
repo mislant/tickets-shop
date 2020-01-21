@@ -1,10 +1,12 @@
 <?php
 
-use app\models\User;
+/**
+ * @var array $events
+ * @var array $pages
+ */
+
 use yii\widgets\LinkPager;
 use yii\helpers\Html;
-
-$user = Yii::$app->getUser()->getIdentity();
 
 ?>
 <? if (Yii::$app->user->isGuest): ?>
