@@ -5,18 +5,20 @@ use yii\helpers\Html;
 
 ?>
 
-<div class="manager-panel" style="display: flex;flex-direction: column">
-    <div class="manager-panel-head" style="display: flex;justify-content: space-between;margin-bottom: 3rem;">
-        <h1>Панель упралвения мероприятиями <?= $user->username ?>'a</h1>
+<div class="manager-panel">
+    <div class="manager-panel-head">
+        <h1>Панель упралвения мероприятиями <span><?= $user->username ?>'a</span></h1>
         <div class="tools">
-            <a href="/event/event-create" class="btn" style="border: 1px solid gray;border-radius: 1rem;">
-                Создать меропритие<span class="pull-right hidden-xs showopacity glyphicon glyphicon-blackboard"></span>
+            <a href="/event/create-event" class="btn"
+               style="display: flex;border: 1px solid gray;border-radius: 1rem;align-items: center;">
+                Создать меропритие
+                <span class="pull-right hidden-xs showopacity glyphicon glyphicon-blackboard"></span>
             </a>
         </div>
     </div>
     <div class="manager-panel-body">
         <?= GridView::widget([
-            'dataProvider' => $model->search(Yii::$app->request->queryParams,$user->id),
+            'dataProvider' => $model->search(Yii::$app->request->queryParams, $user->id),
             'filterModel' => $model,
             'columns' => [
                 ['class' => 'yii\grid\SerialColumn'],
@@ -29,10 +31,10 @@ use yii\helpers\Html;
                     'template' => '{view} {delete}',
                     'buttons' => [
                         'view' => function ($url, $model, $key) {
-                            return Html::a('<span class="glyphicon glyphicon-pencil"></span>', ['/event/event-details', 'id' => $model->id]);
+                            return Html::a('<span class="glyphicon glyphicon-pencil"></span>', ['/event/show-event-details', 'id' => $model->id]);
                         },
                         'delete' => function ($url, $model, $key) {
-                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/event-delete', 'id' => $model->id]);
+                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/delete-event', 'id' => $model->id]);
                         }
                     ]
                 ],
@@ -41,3 +43,5 @@ use yii\helpers\Html;
         ?>
     </div>
 </div>
+
+<? $this->registerCssFile('/' . Yii::getAlias('@web') . 'css/manager-tools.css'); ?>

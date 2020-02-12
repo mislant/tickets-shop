@@ -25,9 +25,8 @@ class CreateEventsTicketForm extends Model
     {
         return
             [
-                [['ticket_type_id', 'cost', 'amount'], 'required'],
                 [['cost', 'amount'], 'integer', 'max' => 1000000],
-                ['ticket_type_id', 'uniqueTicketType'],
+                [['ticket_type_id','cost', 'amount'], 'default', 'value' => null]
             ];
     }
 
@@ -41,20 +40,11 @@ class CreateEventsTicketForm extends Model
         return $tickets->save();
     }
 
-    public function update($id)
-    {
-        $events_ticket = EventsTicket::findOne(['event_id' => $id, 'ticket_type_id' => $this->ticket_type_id]);
-        $events_ticket->cost = $this->cost;
-        $events_ticket->amount = $this->amount;
-        $events_ticket->save();
-        return Event::countTotal($id);
-    }
-
     public function uniqueTicketType($attribute, $params)
     {
         if (!$this->hasErrors()) {
-            if(!EventsTicket::uniqueTicketType($this->event_id,$this->ticket_type_id)){
-                $this->addError($attribute,'Нельзя два раза задавать один и тот же тип билета');
+            if (!EventsTicket::uniqueTicketType($this->event_id, $this->ticket_type_id)) {
+                $this->addError($attribute, 'Нельзя два раза задавать один и тот же тип билета');
             }
         }
     }

@@ -14,14 +14,10 @@ class m191117_075439_create_user_table extends Migration
     {
         $this->createTable('{{%user}}', [
             'id' => $this->primaryKey(),
-            'avatar' => $this->string(),
             'username' => $this->string()->notNull()->unique(),
             'password' => $this->string()->notNull(),
-            'firstname' => $this->string(),
-            'surname'=> $this->string(),
             'email' => $this->string()->notNull()->unique(),
             'wallet' => $this->double()->defaultValue(0),
-            'amount_of_tickets' => $this->integer()->defaultValue(0),
         ]);
     }
 

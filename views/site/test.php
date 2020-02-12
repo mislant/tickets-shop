@@ -1,76 +1,24 @@
+<? Use yii\helpers\Html; ?>
 <?php
-
+$form = \yii\widgets\ActiveForm::begin([
+    'id' => 'form',
+    'action' => 'test-ajax',
+    'method' => 'post',
+]);
 ?>
+<?= $form->field($model, 'text')->textInput(); ?>
+<?= Html::submitButton('Save'); ?>
+<?php $form->end(); ?>
+<!-- Ответ сервера будем выводить сюда -->
+<p id="output"></p>
 
+<?php
+$js = <<<JS
+    $('#form').on('beforeSubmit', function () {
+        alert('send');
+        return false;
+    })
+JS;
 
-<div id="map" style="width: 600px; height: 400px"></div>
-<div>
-    <h1>Улица : <div id="adress"></div></h1>
-</div>
-
-<script type="text/javascript">
-    ymaps.ready(init);
-
-    function init() {
-        var myPlacemark,
-            myMap = new ymaps.Map('map', {
-                center: [55.753994, 37.622093],
-                zoom: 9
-            }, {
-                searchControlProvider: 'yandex#search'
-            });
-
-        // Слушаем клик на карте.
-        myMap.events.add('click', function (e) {
-            var coords = e.get('coords');
-
-            // Если метка уже создана – просто передвигаем ее.
-            if (myPlacemark) {
-                myPlacemark.geometry.setCoordinates(coords);
-            }
-            // Если нет – создаем.
-            else {
-                myPlacemark = createPlacemark(coords);
-                myMap.geoObjects.add(myPlacemark);
-                // Слушаем событие окончания перетаскивания на метке.
-                myPlacemark.events.add('dragend', function () {
-                    getAddress(myPlacemark.geometry.getCoordinates());
-                });
-            }
-            getAddress(coords);
-        });
-
-        // Создание метки.
-        function createPlacemark(coords) {
-            return new ymaps.Placemark(coords, {
-                iconCaption: 'поиск...'
-            }, {
-                preset: 'islands#violetDotIconWithCaption',
-                draggable: true
-            });
-        }
-
-        // Определяем адрес по координатам (обратное геокодирование).
-        function getAddress(coords) {
-            myPlacemark.properties.set('iconCaption', 'поиск...');
-            ymaps.geocode(coords).then(function (res) {
-                var firstGeoObject = res.geoObjects.get(0);
-
-                myPlacemark.properties
-                    .set({
-                        // Формируем строку с данными об объекте.
-                        iconCaption: [
-                            // Название населенного пункта или вышестоящее административно-территориальное образование.
-                            firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
-                            // Получаем путь до топонима, если метод вернул null, запрашиваем наименование здания.
-                            firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
-                        ].filter(Boolean).join(', '),
-                        // В качестве контента балуна задаем строку с адресом объекта.
-                        balloonContent: firstGeoObject.getAddressLine()
-                    });
-                var adress = firstGeoObject.getAddressLine();
-                document.getElementById("adress").innerHTML = adress
-            });
-        }
-    }
-</script>
+$this->registerJs($js);
+?>

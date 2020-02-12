@@ -5,15 +5,16 @@ namespace app\controllers;
 use app\models\BuyTicketForm;
 use app\models\Event;
 use app\models\EventSearch;
+use app\models\EventsTicket;
 use app\models\Ticket;
-use app\models\UserProfile;
-use app\models\UsersTicket;
 use Yii;
+use yii\base\Model;
 use yii\web\Controller;
 use app\models\SignupForm;
 use app\models\LoginForm;
 use app\models\User;
-use yii\web\UploadedFile;
+use yii\web\Response;
+use yii\widgets\ActiveForm;
 
 class UserController extends Controller
 {
@@ -21,12 +22,15 @@ class UserController extends Controller
     public function actionSignUp()
     {
         $model = new SignupForm();
-        if ($model->load(Yii::$app->request->post())) {
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
             if ($model->validate() && $model->signup()) {
-                return $this->redirect('/user/log-in');
+                return $this->goHome();
+            } else {
+                return ActiveForm::validate($model);
             }
         }
-        return $this->render('signup', compact('model'));
+        return $this->goHome();
     }
 
     public function actionLogIn()
@@ -35,63 +39,58 @@ class UserController extends Controller
             return $this->goHome();
         }
         $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            Yii::$app->user->login($model->getUser());
-            return $this->goHome();
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            if ($model->validate()) {
+                Yii::$app->user->login($model->getUser());
+                return $this->goHome();
+            } else {
+                return ActiveForm::validate($model);
+            }
         }
-        return $this->render('login', compact('model'));
+        return $this->goHome();
     }
 
     public function actionLogout()
     {
         if (!Yii::$app->user->isGuest) {
             Yii::$app->user->logout();
-            return $this->redirect('log-in');
         }
+        return $this->goHome();
     }
 
     public function actionShowProfile()
     {
-        $user = Yii::$app->getUser()->getIdentity();
-        $users_ticket = $user->ticket;
-        return $this->render('user-profile', compact('user', 'users_ticket'));
+        $user = Yii::$app->user->getIdentity();
+        $tickets = Ticket::find()->where(['user_id' => Yii::$app->user->getId()])->with('ticket_type')->with('event')->all();
+        return $this->render('user-profile', compact('user', 'tickets'));
     }
 
-    public function actionEditProfile()
-    {
-        $user = Yii::$app->getUser()->getIdentity();
-        $model = new UserProfile();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->photoUpload() && $model->refresh()) {
-                return $this->redirect('/user/show-profile');
-            }
-        }
-        return $this->render('user-edit', compact('user', 'model'));
-    }
 
     public function actionBuyTicket($id)
     {
-        $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
-        $model = new BuyTicketForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->buy()) {
-                $this->redirect(['/user/buy-ticket', 'id' => $id]);
-            } else {
-                Yii::$app->session->setFlash('error_mesage', 'Вы не можете совершить данную операцию');
-                return $this->redirect(['/user/buy-ticket', 'id' => $id]);
-            }
+        $event = Event::find()->with('events_photos')->where(['id' => $id])->one();
+        $events_tickets = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
+        foreach ($events_tickets as $index => $events_ticket) {
+            $models[] = new BuyTicketForm();
+            $models[$index]->ticket_type_id = $events_ticket->ticket_type->id;
+            $models[$index]->ticket_type = $events_ticket->ticket_type->type;
+            $models[$index]->cost = $events_ticket->cost;
+            $models[$index]->all = $events_ticket->amount;
         }
-        return $this->render('buy-ticket', compact('model', 'event', 'events_tickets'));
+        if (Model::loadMultiple($models, Yii::$app->request->post()) && Model::validateMultiple($models)) {
+            return $this->redirect(['/event/buy-confirm', 'id' => $id, 'models' => $models]);
+        }
+        return $this->render('ticket_office', compact('models', 'event'));
     }
 
     public function actionReturnTicket($id)
     {
         if (Ticket::back($id)) {
-            return $this->redirect('/user/personal-list');
+            return $this->redirect('/user/show-profile');
         }
         Yii::$app->session->setFlash('error_message', 'Ошибка');
-        return $this->redirect('/user/personal-list');
+        return $this->redirect('/user/show-profile');
     }
 
     public function actionShowManagerTools()
@@ -99,16 +98,16 @@ class UserController extends Controller
         $user = Yii::$app->getUser()->getIdentity();
         $model = new EventSearch();
 
-        return $this->render('manager-tools',compact('user','model'));
+        return $this->render('manager-tools', compact('user', 'model'));
     }
 
 
 //    ==========================TemproraryFunctions======================================
 
 
-    public function actionAddMoney($id)
+    public function actionAddMoney()
     {
-        $user = User::findOne($id);
+        $user = User::findOne(Yii::$app->user->getIdentity());
         $user->wallet = $user->wallet + 10000;
         $user->save(false);
         $this->redirect('/user/show-profile');

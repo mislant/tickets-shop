@@ -1,0 +1,17 @@
+.message {
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 2rem;
+    padding: 2rem;
+}
+
+.err{
+    background-color: darkred;
+}
+
+.success{
+    background-color: darkgreen;
+}

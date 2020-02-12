@@ -1,88 +1,66 @@
 <?php
 
-use yii\helpers\Html;
+/**
+ * @var $modelEvent app\models\CreateEventForm
+ * @var $modelTickets app\models\CreateEventsTicketForm
+ * @var $type array
+ */
+
 use yii\widgets\ActiveForm;
+use yii\helpers\Html;
 use kartik\datetime\DateTimePicker;
 
 ?>
-
-<div class="form"
-     style="display: flex;width: 60%;margin: 0 auto;box-sizing: border-box;padding: 4rem;box-shadow: 0px 0px 12px 3px rgba(156,156,156,1);">
-    <?php $form = ActiveForm::begin([
-        'id' => 'form-input',
-        'options' => ['class' => 'form-horizontal col-lg-11',]
-    ])
-    ?>
-    <div class="event-crete-form" style="display: flex;flex-direction: column;">
-        <?= $form->field($model, 'title')->textInput(['placeholder' => 'Название мероприятия']) ?>
-        <?= $form->field($model, 'adress')->hiddenInput(['class' => 'adress'])->label('Выберите место проведения мероприятия') ?>
-        <div id="map"
-             style="width: 45rem;height: 27rem;justify-content: center;align-items: center;border: 1px solid gray"></div>
-        <?= $form->field($model, 'date')->widget(DateTimePicker::className(), [
-            'name' => 'check_issue_date',
-            'value' => date('Y-M-d H:i:00'),
-            'options' => ['placeholder' => 'Введите дату проведения мероприятия'],
-            'pluginOptions' => [
-                'format' => 'yyyy-mm-dd H:i:00',
-                'todayHighlight' => true
-            ]
-        ]) ?>
-    </div>
-    <?= Html::submitButton('Дальше', ['class' => 'btn btn-success']) ?>
-    <?php ActiveForm::end() ?>
+<?if(Yii::$app->session->hasFlash('ticket_type_err')):?>
+<div class="error">
+    <p>Нельзя два раза выбирать один и тот же тип билетов</p>
 </div>
-<script type="text/javascript">
-    ymaps.ready(init);
+<?endif;?>
+<? $form = ActiveForm::begin() ?>
+<div class="cover-common">
+    <div class="cover">
+        <div class="form-container">
+            <div class="form-head">
+                <span>Создание мероприятия</span>
+            </div>
+            <div class="form-body">
+                <?= $form->field($modelEvent, 'title')->textInput(['placeholder' => 'Название мероприятия']) ?>
+                <?= $form->field($modelEvent, 'adress')->hiddenInput(['id' => 'adress'])->label('Выберите место проведения мероприятия') ?>
+                <div id="map"></div>
+                <?= $form->field($modelEvent, 'date')->widget(DateTimePicker::className(), [
+                    'name' => 'check_issue_date',
+                    'value' => date('Y-M-d H:i:00'),
+                    'options' => ['placeholder' => 'Введите дату проведения мероприятия'],
+                    'pluginOptions' => [
+                        'format' => 'yyyy-mm-dd H:i:00',
+                        'todayHighlight' => true
+                    ]
+                ]) ?>
+                <a id="addTickets" class="btn btn-info">Создать билеты</a>
+            </div>
+            <div class="form-foot">
+                <a id="addMore" class="button button-more">Еще</a>
+                <?= Html::submitButton('Создать мероприятие', ['class' => 'btn btn-success']) ?>
+            </div>
+        </div>
+    </div>
+    <div class="cover cover-flex">
+        <? foreach ($modelTickets as $idx => $model): ?>
+            <div class="small-form">
+                <div class="form-head"><span>Тип билета</span></div>
+                <div class="form-body">
+                    <?= $form->field($model, "[$idx]ticket_type_id")->dropDownList($type, $params) ?>
+                    <?= $form->field($model, "[$idx]cost")->textInput(['placeholder' => 'Укажите цену билета']) ?>
+                    <?= $form->field($model, "[$idx]amount")->textInput(); ?>
+                </div>
+                <div class="form-foot">
+                </div>
+            </div>
+        <? endforeach; ?>
+    </div>
+</div>
+<? $form = ActiveForm::end() ?>
 
-    function init() {
-        var myPlacemark,
-            myMap = new ymaps.Map('map', {
-                center: [49.8333300, 73.1658000],
-                zoom: 11
-            }, {
-                searchControlProvider: 'yandex#search'
-            });
-
-        myMap.events.add('click', function (e) {
-            var coords = e.get('coords');
-
-            if (myPlacemark) {
-                myPlacemark.geometry.setCoordinates(coords);
-            } else {
-                myPlacemark = createPlacemark(coords);
-                myMap.geoObjects.add(myPlacemark);
-                myPlacemark.events.add('dragend', function () {
-                    getAddress(myPlacemark.geometry.getCoordinates());
-                });
-            }
-            getAddress(coords);
-        });
-
-        function createPlacemark(coords) {
-            return new ymaps.Placemark(coords, {
-                iconCaption: 'поиск...'
-            }, {
-                preset: 'islands#violetDotIconWithCaption',
-                draggable: true
-            });
-        }
-
-        function getAddress(coords) {
-            myPlacemark.properties.set('iconCaption', 'поиск...');
-            ymaps.geocode(coords).then(function (res) {
-                var firstGeoObject = res.geoObjects.get(0);
-
-                myPlacemark.properties
-                    .set({
-                        iconCaption: [
-                            firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
-                            firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
-                        ].filter(Boolean).join(', '),
-                        balloonContent: firstGeoObject.getAddressLine()
-                    });
-                var adress = firstGeoObject.getAddressLine();
-                $('.adress').val(adress);
-            });
-        }
-    }
-</script>
+<? $this->registerCssFile(Yii::getAlias('@web') . '/css/form.css') ?>
+<? $this->registerJsFile(Yii::getAlias('@web') . '/js/event-create.js', ['depends' => [\yii\web\JqueryAsset::className()]]) ?>
+<? $this->registerJsFile(Yii::getAlias('@web') . 'js/yandex-api-map-adress.js', ['depends' => [\yii\web\JqueryAsset::className(), \app\assets\AppAsset::className()]]); ?>

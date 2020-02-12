@@ -18,6 +18,7 @@ class m200111_072650_create_events_photos_table extends Migration
         $this->createTable('{{%events_photos}}', [
             'id' => $this->primaryKey(),
             'event_id' => $this->integer()->notNull(),
+            'photo' => $this->string(),
         ]);
 
         // creates index for column `event_id`

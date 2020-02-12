@@ -40,9 +40,6 @@ class LoginForm extends Model
 
     public function getUser()
     {
-        if (!User::findOne(['email' => $this->emailnick])) {
-            return User::findOne(['username' => $this->emailnick]);
-        }
-        return User::findOne(['email' => $this->emailnikc]);
+        return !User::findOne(['email' => $this->emailnick])?User::findOne(['username' => $this->emailnick]):User::findOne(['email' => $this->emailnikc]);
     }
 }

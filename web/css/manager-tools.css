@@ -1,0 +1,15 @@
+.manager-panel {
+    display: flex;
+    flex-direction: column
+}
+
+.manager-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.manager-panel-head  span {
+    color: #f2ac04;
+}

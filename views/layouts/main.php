@@ -4,10 +4,13 @@
 
 /* @var $content string */
 
-use app\widgets\Alert;
+/**
+ * @var $loginForm array
+ */
+
 use yii\helpers\Html;
-use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
+use yii\widgets\ActiveForm;
 
 AppAsset::register($this);
 ?>
@@ -18,48 +21,106 @@ AppAsset::register($this);
     <meta charset="<?= Yii::$app->charset ?>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=01ff6321-24c8-4bc8-8a91-c197c7311d55&lang=ru_RU" type="text/javascript"></script>
     <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
+    <link rel="shortcut icon" href="/img/logo2sqr.ico" type="image/x-icon">
     <?php $this->head() ?>
 </head>
-<body style="background-color: #edeef0;font-family: 'Amatic SC', cursive;">
+<body>
 <?php $this->beginBody() ?>
-
-<div class="wrap">
-    <?php echo $this->render('navItems') ?>
-    <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
-        <? if (Yii::$app->user->isGuest): ?>
-            <div class='row'
-                 style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem; ;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);min-height: 20rem;">
-                <div class="col-md-12">
-                    <?= $content ?>
-                    <?= Alert::widget() ?>
+<div class="all">
+    <div class="yellow_line_big"></div>
+    <div class="body">
+        <div class="yellow_line_small"></div>
+        <div class="content">
+            <div class="title">
+                <div class="logo">
+                    <img src="/img/logo2.png" alt="logo"/><span>TicketShop</span>
+                </div>
+                <div class="co-dis">
+                    <p>
+                        <span>Хочешь хорошо провести время?</span> <br/>
+                        самые свежие и самые дешевые билеты только у нас
+                    </p>
                 </div>
             </div>
-        <? else: ?>
-            <div class="row"
-                 style="background-color: #ffffff;border: 1px solid;border-color:transparent;border-radius: 2rem;padding-top: 2rem;padding-bottom: 2rem;box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);min-height: 20rem;">
-                <div class="col-md-10">
-                    <?= $content ?>
-                    <?= Alert::widget() ?>
+            <nav class="navigation">
+                <ul>
+                    <? if (Yii::$app->user->isGuest): ?>
+                        <li>
+                            <a href="/site/index">Главная<i class="fas fa-home"></i></a>
+                        </li>
+                        <li>
+                            <a id="auth" style="cursor: pointer"
+                            >Войти<i class="fas fa-door-open"></i></a>
+                        </li>
+                        <li>
+                            <a id="reg" style="cursor: pointer"
+                            >Зарегистрироваться<i class="fas fa-sign-in-alt"></i></a>
+                        </li>
+                    <? elseif (Yii::$app->user->can('admin')): ?>
+                        <li>
+                            <a href="/site/index">Главная<i class="fas fa-home"></i></a>
+                        </li>
+                        <li>
+                            <a href="/user/show-profile">Личный кабинет<i class="fas fa-user"></i></a>
+                        </li>
+                        <li>
+                            <a href="#">Инструменты<i class="fas fa-cogs"></i>
+                            </a>
+                            <ul>
+                                <li><a href="/site/show-role">Управление ролями<i class="fas fa-calendar-alt"></i></a>
+                                </li>
+                                <li><a href="/event/show-events">Управление мероприятиями<i class="fas fa-edit"></i></a>
+                                </li>
+                                <li><a href="/event/show-ticket-type">Управление типами билетов<i
+                                                class="fas fa-user-edit"></i></a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="/user/logout">Выйти<i class="fas fa-sign-in-alt"></i></a>
+                        </li>
+                    <? elseif (Yii::$app->user->can('manager')): ?>
+                        <li>
+                            <a href="/site/index">Главная<i class="fas fa-home"></i></a>
+                        </li>
+                        <li>
+                            <a href="/user/show-manager-tools">Мои мероприятия<i class="fas fa-edit"></i></a>
+                        </li>
+                        <li>
+                            <a href="/user/show-profile">Личный кабинет<i class="fas fa-user"></i></a>
+                        </li>
+                        <li>
+                            <a href="/user/logout">Выйти<i class="fas fa-sign-in-alt"></i></a>
+                        </li>
+                    <? elseif (Yii::$app->user->can('user')): ?>
+                        <li>
+                            <a href="/site/index">Главная<i class="fas fa-home"></i></a>
+                        </li>
+                        <li>
+                            <a href="/site/render-all">Все мероприятия<i class="fas fa-door-open"></i></a>
+                        </li>
+                        <li>
+                            <a href="/user/show-profile">Личный кабинет<i class="fas fa-user"></i></a>
+                        </li>
+                        <li>
+                            <a href="/user/logout">Выйти<i class="fas fa-sign-in-alt"></i></a>
+                        </li>
+                    <? endif; ?>
+                </ul>
+            </nav>
+            <?= $content ?>
+        </div>
+        <footer>
+            <div class="in-foot">
+                <div class="logo">
+                    <img src="/img/logo2.png" alt="logo"/><span>TicketShop</span>
                 </div>
-                <div class="col-md-2">
-                    <? require 'sideBar.php' ?>
-                </div>
+                <span>&copy; TicketShop <?= date('Y') ?></span>
             </div>
-        <? endif ?>
+        </footer>
     </div>
 </div>
-<footer class="footer">
-    <div class="container">
-        <p class="pull-left">&copy; My Company <?= date('Y') ?></p>
-    </div>
-</footer>
-
 <?php $this->endBody() ?>
 </body>
 </html>

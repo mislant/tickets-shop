@@ -1,0 +1,59 @@
+.all-events {
+    display: flex;
+    flex-wrap: wrap;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.event-small {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 12.75rem;
+    margin-bottom: 2rem;
+    margin-left: 4rem;
+}
+
+.small-photo {
+    height: 10rem;
+    width: 100%;
+    border-bottom: 2px solid #f2ac04;
+    border-top: 2px solid #f2ac04;
+    position: relative;
+}
+
+.small-photo > a{
+    opacity: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: 200ms;
+}
+
+.small-photo:hover > a{
+    opacity: 1;
+    transition: 200ms;
+    color: white;
+}
+
+.small-photo > a:hover{
+    font-size: 1.2rem;
+}
+
+.small-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #f2ac04;
+    border-left: 1px dashed #f2ac04;
+    border-right: 1px dashed #f2ac04;
+}
+
+.small-container > span {
+    color: #f2ac04;
+}

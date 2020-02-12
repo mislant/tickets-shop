@@ -2,9 +2,15 @@
 
 namespace app\controllers;
 
+use app\models\BuyTicketForm;
+use app\models\EventSearch;
+use app\models\UploadPhoto;
+use app\models\EventsTicket;
 use Yii;
-use yii\db\Exception;
+use yii\base\Model;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use app\models\Event;
 use app\models\CreateEventForm;
@@ -23,17 +29,25 @@ class EventController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['admin'],
-                        'actions' => ['ticket-type-list', 'ticket-type-create', 'ticket-type-delete'],
+                        'actions' => [
+                            'show-ticket-type', 'ticket-type-create',
+                            'ticket-type-delete', 'update-tickets-details',
+                            'show-events',
+                        ],
                     ],
                     [
                         'allow' => true,
                         'roles' => ['manager', 'admin'],
-                        'actions' => ['event-delete', 'event-create', 'events-ticket-create', 'total-tickets'],
+                        'actions' => [
+                            'delete-event', 'create-event',
+                            'events-ticket-create', 'total-tickets',
+                            'upload-event-photo', 'delete-event-photo'
+                        ],
                     ],
                     [
                         'allow' => true,
                         'roles' => ['user', 'manager', 'admin'],
-                        'actions' => ['events-list', 'event-details'],
+                        'actions' => ['show-event-details', 'buy-confirm', 'buy-ticket'],
                     ],
                 ],
             ],
@@ -43,79 +57,139 @@ class EventController extends Controller
     ///==================EventActionsBegin===========================
 
 
-    public function actionEventsList()
+    public function actionShowEvents()
     {
-        $data = Event::GiveAll();
-        return $this->render('event', compact('data'));
+        $model = new EventSearch();
+        return $this->render('events-list', compact('model'));
     }
 
-    public function actionEventDetails($id)
+    public function actionCreateEvent()
     {
-        $event_model = new CreateEventForm();
-        $ticket_model = new CreateEventsTicketForm();
-        $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
-        if (Yii::$app->user->can('updateOwnEvent', ['event' => $event])) {
-            if ($event_model->load(Yii::$app->request->post())) {
-                if ($event_model->validate() && $event_model->update($id)) {
-                    return $this->redirect(['/event/event-details', 'id' => $id]);
+        $modelEvent = new CreateEventForm();
+        $ticketTypes = TicketType::find()->all();
+        $params = ['prompt' => 'Укажите тип билета'];
+        $type = ArrayHelper::map($ticketTypes, 'id', 'type');
+        foreach ($ticketTypes as $idx => $item) {
+            $modelTickets[$idx] = new CreateEventsTicketForm();
+        }
+        if ($modelEvent->load(Yii::$app->request->post()) && $modelEvent->validate()) {
+            if (Model::loadMultiple($modelTickets, Yii::$app->request->post()) && Model::validateMultiple($modelTickets)) {
+                foreach ($modelTickets as $i => $model) {
+                    if ($model->ticket_type_id == null) {
+                        unset($modelTickets[$i]);
+                    } else {
+                        $checkArray[] = $model->ticket_type_id;
+                    }
                 }
+                if (count($modelTickets) == 1) {
+                    $event = $modelEvent->create();
+                    foreach ($modelTickets as $model) {
+                        $model->event_id = $event->id;
+                        $model->create();
+                    }
+                } else {
+                    $size = count($checkArray);
+                    for ($i = 0; $i < $size; $i++) {
+                        for ($j = $i + 1; $j < $size; $j++) {
+                            if ($checkArray[$i] == $checkArray[$j]) {
+                                Yii::$app->session->setFlash('ticket_type_err', 'Нельзя указывать два раза один и тот же тип билетов');
+                                return $this->redirect('/event/create-event');
+                            }
+                        }
+                    }
+                    $event = $modelEvent->create();
+                    foreach ($modelTickets as $i => $model) {
+                        $model->event_id = $event->id;
+                        $model->create();
+                    }
+                }
+                Event::countTotal($event->id);
+                return $this->redirect(['/event/show-event-details', 'id' => $event->id]);
             }
-            if ($ticket_model->load(Yii::$app->request->post())) {
-                if ($ticket_model->validate() && $ticket_model->update($id)) {
-                    return $this->redirect(['/event/event-details', 'id' => $id]);
+        }
+        return $this->render('event_create', compact('modelEvent', 'modelTickets', 'params', 'type'));
+    }
+
+    public function actionShowEventDetails($id = null)
+    {
+        if ($id == null) {
+            $id = Yii::$app->request->post('event_id');
+        }
+        if (Yii::$app->user->can('updateOwnEvent', ['event' => Event::findOne($id)])) {
+            $event = Event::find()->with('events_photos')->where(['id' => $id])->one();
+            $eventsTicket = EventsTicket::find()->where(['event_id' => $id])->joinWith('ticket_type')->all();
+            $total = 0;
+            foreach ($eventsTicket as $ticket) {
+                $total += $ticket->amount;
+            }
+            $eventModel = new CreateEventForm();
+            $eventPhoto = new UploadPhoto();
+            if (Yii::$app->request->isAjax) {
+                if ($eventModel->load(Yii::$app->request->post()) && $eventModel->validate() && $eventModel->update($id)) {
+                    return $this->renderAjax('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
+                } elseif (Model::loadMultiple($eventsTicket, Yii::$app->request->post()) && Model::validateMultiple($eventsTicket)) {
+                    foreach ($eventsTicket as $ticket) {
+                        $ticket->update();
+                    }
+                    Event::countTotal($id);
+                    $total = 0;
+                    foreach ($eventsTicket as $ticket) {
+                        $total += $ticket->amount;
+                    }
+                    return $this->renderAjax('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
+                }
+            } elseif ($eventPhoto->load(Yii::$app->request->post()) && $eventPhoto->validate()) {
+                if (count($event->events_photos) > 6) {
+                    Yii::$app->session->setFlash('photo_warn', 'Нельзя загружать больше шести фотографий');
+                    return $this->render('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
+                } else {
+                    $eventPhoto->uploadPhoto($id);
+                    $event = Event::find()->with('events_photos')->where(['id' => $id])->one();
+                    return $this->render('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
                 }
             }
         }
-        return $this->render('event_details', compact('event', 'events_tickets', 'event_model', 'ticket_model'));
+        return $this->render('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
     }
 
-    public function actionEventCreate()
+    public function actionDeleteEventPhoto()
     {
-        $model = new CreateEventForm();
-        if ($model->load(Yii::$app->request->post())) {
-            if ($model->validate() && $event = $model->create()) {
-                return $this->redirect(['events-ticket-create', 'id' => $event->id]);
-            }
+        $eventPhoto = new UploadPhoto();
+        $event_id = Yii::$app->request->post('event_id');
+        if ($eventPhoto->load(Yii::$app->request->post()) && $eventPhoto->photoDelete()) {
+            return $this->redirect(['/event/show-event-details', 'id' => $event_id]);
         }
-        return $this->render('event_create', compact('model'));
     }
 
-    public function actionEventDelete($id)
+    public function actionDeleteEvent($id)
     {
+        $model = new EventSearch();
         if (Yii::$app->user->can('updateOwnEvent', ['event' => Event::find($id)->one()])) {
             if (Event::deleteEvent($id)) {
-                return $this->redirect('events-list');
+                return $this->renderAjax('events-list', compact('model'));
             }
         } else {
             Yii::$app->session->setFlash('error_message', 'У вас нет прав на данное действие!');
-            return $this->redirect(['/event/events-list']);
+            return $this->redirect(['/event/show-events']);
         }
     }
 
-    public function actionEventsTicketCreate($id)
+
+///==================EventActionsEnd===================================
+///
+/// =================TicketActionBegin=================================
+
+
+    public function actionShowTicketType()
     {
-        $model = new CreateEventsTicketForm();
-        $model->event_id = $id;
-        if ($model->load(Yii::$app->request->post())) {
-            if ($model->validate() && $model->create()) {
-                Event::countTotal($id);
-                return $this->redirect(['events-ticket-create', 'id' => $id]);
-            }
-        }
-        return $this->render('events_ticket_create', compact('model'));
-    }
-
-
-    ///==================EventActionsEnd===================================
-    ///
-    /// =================TicketActionBegin=================================
-
-
-    public function actionTicketTypeList()
-    {
-        $data = TicketType::GiveAll();
-        return $this->render('ticket_type', compact('data'));
+        $query = TicketType::find();
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => '15',
+            ]
+        ]);
+        return $this->render('ticket_type', compact('dataProvider'));
     }
 
     public function actionTicketTypeCreate()
@@ -123,7 +197,7 @@ class EventController extends Controller
         $model = new CreateTicketTypeForm;
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate() && $model->createTicketType()) {
-                return $this->redirect('/event/ticket-type-list');
+                return $this->redirect('/event/show-ticket-type');
             }
         }
         return $this->render('ticket_type_create', compact('model'));
@@ -136,23 +210,43 @@ class EventController extends Controller
     }
 
 
+/// =================TicketActionEnd============================
+///
+/// ==============BuyingTransactions============================
 
-    /// =================TicketActionEnd============================
-
-
-    ///==============================================================
-
-    public function actionAddevent()
+    public function actionBuyConfirm(array $models, $id)
     {
-        $event = new Event;
-        $event->title = 'Мероприяте';
-        $event->adress = 'Мироприятия';
-        $event->amount_of_tickets = '10000';
-        return $event->save();
+        foreach ($models as $index => $model) {
+            if ($model['amount'] == 0) {
+                unset($models[$index]);
+            } elseif ($model['amount'] < 0) {
+                Yii::$app->session->setFlash('ticket_err_msg', 'Не верное количество билетов');
+                return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+            } elseif ($model['amount'] > $model['all']) {
+                Yii::$app->session->setFlash('ticket_err_msg', 'Вы выбрали больше билетов чем есть');
+                return $this->redirect(['user/buy-ticket', 'id' => $id]);
+            }
+        }
+        if (empty($models)) {
+            Yii::$app->session->setFlash('empty_ticket_err_msg', 'Вы не выбрали ни одного билета');
+            return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+        }
+        return $this->render('buy-confirm', compact('models', 'id'));
     }
 
-    public function actionTest()
+    public function actionBuyTicket(array $models, $id)
     {
-        return $this->render('test2');
+        foreach ($models as $model) {
+            $form = new BuyTicketForm();
+            $form->attributes = $model;
+            if ($form->buy()) {
+            } else {
+                Yii::$app->session->setFlash('error_mesage', 'Вы не можете совершить данную операцию');
+                return $this->redirect(['/user/buy-ticket', 'id' => $id]);
+            }
+        }
+        Yii::$app->session->setFlash('success', 'Успех');
+        return $this->redirect(['/user/buy-ticket', 'id' => $id]);
     }
+
 }

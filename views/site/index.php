@@ -1,101 +1,207 @@
 <?php
 
-use app\models\User;
-use yii\widgets\LinkPager;
-use yii\helpers\Html;
+/**
+ * @var $loginForm yii\base\Model;
+ * @var $signupForm yii\base\Model;
+ * @var $latestEvents array;
+ * @var $latestAmount integer;
+ * @var $soonEvents array;
+ */
 
-$user = Yii::$app->getUser()->getIdentity();
+use yii\widgets\ActiveForm;
+use yii\helpers\Html;
+use yii\web\JqueryAsset;
 
 ?>
-<? if (Yii::$app->user->isGuest): ?>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-1"></div>
-            <div class="col-md-9" style="margin-top:">
-                <?php foreach ($events as $event): ?>
-                    <div class="event"
-                         style="display: flex; margin-top: 3rem;box-shadow: -3px 3px 4px 0px rgba(33,33,33,0.55);padding: 0.3rem;padding-left: 1rem;">
-                        <div style="display: flex;flex-direction: column;align-items: center;">
-                            <div class="event-phohto"
-                                 style="background-color: #222222;width: 20rem;height: 14rem;color: white;display:flex;justify-content: center;align-items: center;margin-top: 1rem;margin-bottom: 1rem;">
-                                Нет фото
-                            </div>
-                            <? if ($event->date < date('Y-m-d H:i:s')): ?>
-                                <?= Html::a('Подробнее', ["/user/log-in", 'id' => $event->id]) ?>
-                            <? else: ?>
-                                <?= Html::a('Купить билеты', ["/user/log-in", 'id' => $event->id]) ?>
-                            <? endif; ?>
+
+<div class="main">
+    <div class="latest_events">
+        <span>Самые свежие мероприятия</span>
+        <div class="wrap">
+            <div class="prev n"><i class="fas fa-arrow-left"></i></div>
+            <div class="slider">
+                <div class="slider-item curry" style="display: block">
+                    <div class="crutch">
+                        <div class="event1">
+                            <img class="photo" src="<?= $latestEvents[0]['events_photos'][0]['photo'] ?>">
+                            <p class="event_title">
+                                <span><?= $latestEvents[0]['title'] ?></span>
+                            </p>
                         </div>
-                        <div class="event-info" style="margin: 0 2rem 2rem 2rem; width: 60%">
-                            <span class="event-main" style="font-size: 2rem;">
-                                <?= $event->title ?>
-                                <? if ($event->date < date('Y-m-d H:i:s')): ?>
-                                    <span style="color: darkred;">Прошло</span>
-                                <? endif; ?>
-                            </span>
-                            <p class="event-description"
-                               style="width:100%; height:14rem;overflow: hidden;text-overflow: ellipsis; margin: 1rem;box-sizing: border-box;"><?= $event->description ?></p>
+                        <div class="event2">
+                            <img class="photo" src="<?= $latestEvents[0]['events_photos'][1]['photo'] ?>">
+                            <div class="line"></div>
+                            <p>
+                                <?= $latestEvents[0]['description'] ?>
+                            </p>
+                        </div>
+                        <?= Html::a('Купить', ['/user/buy-ticket', 'id' => $latestEvents[0]['id']], ['class' => 'button button-buy']) ?>
+                    </div>
+                </div>
+                <? for ($i = 1; $i < $latestAmount; $i++): ?>
+                    <div class="slider-item" style="display: none">
+                        <div class="crutch">
+                            <div class="event1">
+                                <img class="photo" src="<?= $latestEvents[$i]['events_photos'][0]['photo'] ?>">
+                                <p class="event_title">
+                                    <span><?= $latestEvents[$i]['title'] ?></span>
+                                </p>
+                            </div>
+                            <div class="event2">
+                                <img class="photo" src="<?= $latestEvents[$i]['events_photos'][1]['photo'] ?>">
+                                <div class="line"></div>
+                                <p>
+                                    <?= $latestEvents[$i]['description'] ?>
+                                </p>
+                            </div>
+                            <?= Html::a('Купить', ['/user/buy-ticket', 'id' => $latestEvents[$i]['id']], ['class' => 'button button-buy']) ?>
                         </div>
                     </div>
-                <? endforeach; ?>
-                <? echo LinkPager::widget([
-                    'pagination' => $pages,
-                ]); ?>
+                <? endfor; ?>
             </div>
-            <div class="col-md-2"></div>
+            <div class="next n"><i class="fas fa-arrow-right"></i></div>
         </div>
     </div>
-<? else: ?>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-2">
-                <div class="user"
-                     style="display: flex;justify-content: center;flex-direction: column;align-items: center;box-shadow: 0px 2px 7px 2px #949494;;padding: 1rem;border-radius: 1rem;">
-                    <? if ($user->avatar == null): ?>
-                        <div class="avatar"
-                             style="background-color: #222222;width: 14rem;height: 14rem;color: white;display:flex;justify-content: center;align-items: center;">
-                            Нет фото
-                        </div>
-                    <? else: ?>
-                        <div class="photo"
-                             style="margin: 0 auto;display: flex;justify-content: center;align-items: center;">
-                            <?= Html::img('@web/' . $user->avatar, ['alt' => 'Ava']) ?>
-                        </div>
-                    <? endif; ?>
-                    <span style="font-weight: bold;font-size: 2rem;"><i><?= $user->username ?></i></span>
+    <div class="line"></div>
+    <div class="some"><span>Скоро начнутся</span></div>
+    <div class="all_events">
+        <? foreach ($soonEvents as $event): ?>
+            <div class="event">
+                <span class="topic"><?= $event['title'] ?></span>
+                <div class="event-preview">
+                    <?= Html::a('Купить', ['/user/buy-ticket', 'id' => $event['id']], ['class' => 'button button-buy']) ?>
+                    <img src="<?= $event['events_photos'][0]['photo'] ?>">
+                    <div class="event-date">
+                        <?= Yii::$app->formatter->asDatetime($event['date']) ?>
+                    </div>
+                </div>
+                <div class="description">
+                    <p>
+                        <?= $event['description'] ?>
+                    </p>
                 </div>
             </div>
-            <div class="col-md-8" style="margin-top:">
-                <?php foreach ($events as $event): ?>
-                    <div class="event"
-                         style="display: flex; margin-top: 3rem;box-shadow: -3px 3px 4px 0px rgba(33,33,33,0.55);padding: 0.3rem;padding-left: 1rem;">
-                        <div style="display: flex;flex-direction: column;align-items: center;">
-                            <div class="event-phohto"
-                                 style="background-color: #222222;width: 20rem;height: 14rem;color: white;display:flex;justify-content: center;align-items: center;margin-top: 1rem;margin-bottom: 1rem;">
-                                Нет фото
-                            </div>
-                            <? if ($event->date < date('Y-m-d H:i:s')): ?>
-                                <?= Html::a('Подробнее', ["/user/buy-ticket", 'id' => $event->id]) ?>
-                            <? else: ?>
-                                <?= Html::a('Купить билеты', ["/user/buy-ticket", 'id' => $event->id]) ?>
-                            <? endif; ?>
-                        </div>
-                        <div class="event-info" style="margin: 0 2rem 2rem 2rem; width: 60%">
-                            <span class="event-main" style="font-size: 2rem;">
-                                <h2 style="margin: 0;"><?= $event->title ?></h2>
-                                <? if ($event->date < date('Y-m-d H:i:s')): ?>
-                                    <span style="color: darkred;">Прошло</span>
-                                <? endif; ?>
-                            </span>
-                            <p class="event-description"
-                               style="width:100%; height:14rem;overflow: hidden;text-overflow: ellipsis; margin: 1rem;box-sizing: border-box;"><?= $event->description ?></p>
-                        </div>
+        <? endforeach; ?>
+    </div>
+    <div class="info_panel">
+        <div class="info info-news">
+            <h3>Последние и самые свежие новости</h3>
+            <div class="news">
+                <div class="news_once">
+                    <div class="date_news"><span>27</span>НОЯБ</div>
+                    <div class="item">
+                        <h4>Самая главная новость</h4>
+                        <p>
+                            Скоро вот вот уже я сдам свой проект.Этот сайт огромное для меня дела, поистенне настоящий
+                            проект, не то что в универе.
+                        </p>
                     </div>
-                <? endforeach; ?>
-                <? echo LinkPager::widget([
-                    'pagination' => $pages,
-                ]); ?>
+                </div>
+                <div class="news_once">
+                    <div class="date_news"><span>27</span>НОЯБ</div>
+                    <div class="item">
+                        <h4>СКОРО ПРЕЗЕНТАЦИЯ</h4>
+                        <p>
+                            Уже совсем скоро, а именно через две недели я буду защищать этот сайт. Как бы все не прошло
+                            я еще никогда в жизни не получал столь боьшое удовольствие знимаясь этим делом...
+                        </p>
+                    </div>
+                </div>
             </div>
+        </div>
+        <div class="info info-about">
+            <h3>Так кто мы такие?</h3>
+            <p>
+                Созерцание непредсказуемо. Сомнение рефлектирует естественный
+                закон исключённого третьего.. Отсюда естественно следует, что
+                автоматизация дискредитирует предмет деятельности. Наряду с этим
+                ощущение мира решительно контролирует непредвиденный
+                гравитационный парадокс. Наряду с этим ощущение мира решительно
+            </p>
+        </div>
+        <div class="info info-contact">
+            <h3>Мы свегда на связи</h3>
+            <div class="contact contact-phone">
+                <i class="fas fa-mobile-alt"></i>
+                <span>+7-776-505-60-90</span>
+            </div>
+            <div class="contact contact-housephone">
+                <i class="fas fa-phone"></i>
+                <span>8(7212)44-16-28</span>
+            </div>
+            <div class="contact contact-mail">
+                <i class="fas fa-envelope-open-text"></i>
+                <span>kiryakz2000@gmail.com</span>
+            </div>
+            <div class="contact contact-adress">
+                <i class="fas fa-building"></i>
+                <span>ул.Академическая д.9/1</span>
+            </div>
+        </div>
+    </div>
+    <div class="our_clients">
+        <div class="our">
+            <div class="line line-first"></div>
+            <span><h2>Наши клиенты</h2></span>
+            <div class="line"></div>
+        </div>
+        <div class="clients">
+            <img src="/img/woop.png" alt="woop"/>
+        </div>
+        <div class="line"></div>
+    </div>
+</div>
+<? if (Yii::$app->user->isGuest): ?>
+    <div class="popup popup-authorization" id="popup-auth">
+        <div class="form-container">
+            <div class="form-head"><img src="/img/key-icon_white.png" alt="key"><span>Авторизация<span></div>
+            <? $form = ActiveForm::begin([
+                'id' => 'form-log',
+                'action' => 'user/log-in',
+                'enableClientValidation' => true,
+                'enableAjaxValidation' => true
+            ]) ?>
+            <div class="form-body">
+                <?= $form->field($loginForm, 'emailnick')->textInput() ?>
+                <?= $form->field($loginForm, 'password')->passwordInput() ?>
+            </div>
+            <div class="form-foot">
+                <?= Html::submitButton('Войти', ['class' => 'button button-in']) ?>
+                <a class="a-form" id="auth-reg">Зарегестрироваться?</a>
+            </div>
+            <? $form = ActiveForm::end() ?>
+        </div>
+    </div>
+    <div class="popup popup-register" id="popup-reg">
+        <div class="form-container">
+            <div class="form-head"><img src="/img/key-icon_white.png" alt="key"><span>Регистрация<span></div>
+            <? $form = ActiveForm::begin([
+                'id' => 'form-reg',
+                'action' => 'user/sign-up',
+                'enableClientValidation' => true,
+                'enableAjaxValidation' => true,
+            ]) ?>
+            <div class="form-body">
+                <?= $form->field($signupForm, 'username')->textInput() ?>
+                <?= $form->field($signupForm, 'email')->textInput() ?>
+                <?= $form->field($signupForm, 'password')->passwordInput() ?>
+                <?= $form->field($signupForm, 'password_repeat')->passwordInput() ?>
+            </div>
+            <div class="form-foot">
+                <?= Html::submitButton('Зарегестрироваться', ['class' => 'button button-in']) ?>
+                <a class="a-form" id="reg-auth">Есть аккаунт?</a>
+            </div>
+            <? $form = ActiveForm::end() ?>
         </div>
     </div>
 <? endif; ?>
+<?
+
+if (Yii::$app->user->isGuest) {
+    $this->registerCssFile('/' . Yii::getAlias('@web') . 'css/form.css');
+    $this->registerJsFile('/' . Yii::getAlias('@web') . 'js/popup.js', ['depends' => [JqueryAsset::className()]]);
+    $this->registerJsFile('/' . Yii::getAlias('@web') . 'js/auth-reg_ajax.js', ['depends' => [JqueryAsset::className()]]);
+}
+$this->registerJsFile('/' . Yii::getAlias('@web') . 'js/slider.js', ['depends' => [JqueryAsset::className()]]);
+?>
+

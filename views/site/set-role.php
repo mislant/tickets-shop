@@ -1,14 +1,15 @@
 <?php
 
+/**
+ * @var array $data
+ * @var array $role
+ */
+
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-use yii\helpers\ArrayHelper;
-use app\models\AuthItem;
 
 ?>
 <?php
-$roles = AuthItem::GiveRoles();
-$role = ArrayHelper::map($roles, 'name', 'name');
 $params = [
     'prompt' => 'Choose role'
 ];
