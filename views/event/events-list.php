@@ -9,16 +9,15 @@ use yii\grid\GridView;
 use yii\widgets\Pjax;
 
 ?>
-<?php
-if (Yii::$app->session->has('error_message')) {
-    echo Yii::$app->session->getFlash('error_message');
-}
-?>
+<?if (Yii::$app->session->has('access_deny')):?>
+<div style="color: darkred;margin: 0 auto">
+    <?=Yii::$app->session->getFlash('access_deny')?>
+</div>
+<?endif;?>
 <div class="container-fluid">
     <?php echo Html::a('Создать мероприятие', ['event/create-event'], ['class' => 'btn btn-primary pull-right']); ?>
 </div>
 <hr>
-<? Pjax::begin() ?>
 <?= GridView::widget([
     'dataProvider' => $model->search(Yii::$app->request->queryParams),
     'filterModel' => $model,
@@ -37,7 +36,7 @@ if (Yii::$app->session->has('error_message')) {
                     return Html::a('<span class="glyphicon glyphicon-pencil"></span>', ['/event/show-event-details', 'id' => $model->id]);
                 },
                 'delete' => function ($url, $model, $key) {
-                    return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/delete-event', 'id' => $model->id], ['data-pjax' => 0]);
+                    return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/event/delete-event', 'id' => $model->id]);
                 }
             ]
         ],
@@ -45,4 +44,3 @@ if (Yii::$app->session->has('error_message')) {
 
 ])
 ?>
-<? Pjax::end() ?>

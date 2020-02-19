@@ -11,7 +11,7 @@ use yii\helpers\Html;
 ?>
 
 <div class="confirm">
-    <h1 style="color: darkred;">Подтвреждение покупки</h1>
+    <h1 style="color: #f2ac04;">Подтвреждение покупки</h1>
     <hr/>
     <table class="table table-dark">
         <thead>

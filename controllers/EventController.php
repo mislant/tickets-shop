@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\BuyTicketForm;
 use app\models\EventSearch;
+use app\models\Ticket;
 use app\models\UploadPhoto;
 use app\models\EventsTicket;
 use Yii;
@@ -32,7 +33,6 @@ class EventController extends Controller
                         'actions' => [
                             'show-ticket-type', 'ticket-type-create',
                             'ticket-type-delete', 'update-tickets-details',
-                            'show-events',
                         ],
                     ],
                     [
@@ -40,8 +40,9 @@ class EventController extends Controller
                         'roles' => ['manager', 'admin'],
                         'actions' => [
                             'delete-event', 'create-event',
-                            'events-ticket-create', 'total-tickets',
-                            'upload-event-photo', 'delete-event-photo'
+                            'create-events-tickets', 'total-tickets',
+                            'upload-event-photo', 'delete-event-photo',
+                            'delete-events-tickets','show-events'
                         ],
                     ],
                     [
@@ -65,6 +66,7 @@ class EventController extends Controller
 
     public function actionCreateEvent()
     {
+
         $modelEvent = new CreateEventForm();
         $ticketTypes = TicketType::find()->all();
         $params = ['prompt' => 'Укажите тип билета'];
@@ -148,8 +150,10 @@ class EventController extends Controller
                     return $this->render('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
                 }
             }
+            return $this->render('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
         }
-        return $this->render('event_details', compact('event', 'eventModel', 'eventPhoto', 'eventsTicket', 'total'));
+        Yii::$app->session->setFlash('access_deny' , 'В доступе отказано');
+        return $this->redirect('/event/show-events');
     }
 
     public function actionDeleteEventPhoto()
@@ -163,17 +167,39 @@ class EventController extends Controller
 
     public function actionDeleteEvent($id)
     {
-        $model = new EventSearch();
         if (Yii::$app->user->can('updateOwnEvent', ['event' => Event::find($id)->one()])) {
+            Ticket::backBoughtTicket($id);
             if (Event::deleteEvent($id)) {
-                return $this->renderAjax('events-list', compact('model'));
+                return $this->redirect('event/show-events');
             }
         } else {
             Yii::$app->session->setFlash('error_message', 'У вас нет прав на данное действие!');
-            return $this->redirect(['/event/show-events']);
+            return $this->redirect(['event/show-events']);
         }
     }
 
+    public function actionDeleteEventsTickets($ticket_type_id, $event_id)
+    {
+        Ticket::backBoughtTicket($event_id,$ticket_type_id);
+        EventsTicket::deleteEventsTickets($ticket_type_id, $event_id);
+        Event::countTotal($event_id);
+        return $this->redirect(['event/show-event-details', 'id' => $event_id]);
+    }
+
+    public function actionCreateEventsTickets($id)
+    {
+        $model = new CreateEventsTicketForm();
+        $ticketTypes = TicketType::find()->all();
+        $type = ArrayHelper::map($ticketTypes, 'id', 'type');
+        if ($model->load(Yii::$app->request->post())) {
+            $model->event_id = $id;
+            if ($model->create()) {
+                Event::countTotal($id);
+                return $this->redirect(['event/show-event-details', 'id' => $id]);
+            }
+        }
+        return $this->render('events_ticket_create', compact('model', 'type'));
+    }
 
 ///==================EventActionsEnd===================================
 ///
@@ -246,6 +272,7 @@ class EventController extends Controller
             }
         }
         Yii::$app->session->setFlash('success', 'Успех');
+        Event::countTotal($id);
         return $this->redirect(['/user/buy-ticket', 'id' => $id]);
     }
 

@@ -51,4 +51,10 @@ class EventsTicket extends ActiveRecord
         }
         return true;
     }
+
+    public static function deleteEventsTickets($type_id,$event_id)
+    {
+        $eventsTickets = EventsTicket::find()->where(['event_id' => $event_id , 'ticket_type_id' => $type_id])->one();
+        return $eventsTickets->delete();
+    }
 }

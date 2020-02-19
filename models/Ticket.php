@@ -44,11 +44,29 @@ class Ticket extends ActiveRecord
             'ticket_type_id' => $ticket->ticket_type_id,
         ])->one();
         $events_ticket->amount += 1;
-        $user = Yii::$app->getUser()->getIdentity();
+        $user = User::findOne(['id' => $ticket->user_id]);
         $user->wallet += $events_ticket->cost;
         $user->save();
         $events_ticket->save();
         $ticket->delete();
         return true;
+    }
+
+    public static function backBoughtTicket($event_id, $ticket_type_id = null)
+    {
+        if ($ticket_type_id == null) {
+            $event = Event::find()->where(['id' => $event_id])->with('events_ticket')->one();
+            foreach ($event->events_ticket as $i => $event) {
+                $tickets = Ticket::find()->where(['event_id' => $event_id, 'ticket_type_id' => $event->ticket_type_id])->all();
+                foreach ($tickets as $ticket) {
+                    $ticket->back($ticket->id);
+                }
+            }
+        } else {
+            $tickets = Ticket::find()->where(['event_id' => $event_id, 'ticket_type_id' => $ticket_type_id])->all();
+            foreach ($tickets as $ticket) {
+                $ticket->back($ticket->id);
+            }
+        }
     }
 }

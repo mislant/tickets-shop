@@ -138,7 +138,7 @@ use yii\helpers\Html;
                                 ->textInput(['value' => $ticket->amount])
                                 ->label('') ?>
                         </th>
-                        <th><?= Html::a('', ['event/delete-events-tickets', 'ticket_type_id' => $ticket->ticket_type_id, 'event_id' => $event->id], ['class' => 'fas fa-backspace', 'style' => 'font-size:2rem']) ?></th>
+                         <th><?= Html::a('-', ['event/delete-events-tickets', 'ticket_type_id' => $ticket->ticket_type_id, 'event_id' => $event->id], ['class' => 'fas fa-backspace', 'style' => 'font-size:2rem']) ?></th>
                     </tr>
                 <? endforeach; ?>
                 <tr>
@@ -148,7 +148,7 @@ use yii\helpers\Html;
                         <div class="result"><?= $total ?></div>
                     </th>
                     <th>
-                        <?= Html::a('Добавить', ['event/create-events-tickets', 'id' => $event->id]) ?>
+                         <?= Html::a('Добавить', ['event/create-events-tickets', 'id' => $event->id]) ?>
                         <?= Html::submitButton('Изменить', ['class' => 'btn btn-success']) ?>
                     </th>
                 </tr>

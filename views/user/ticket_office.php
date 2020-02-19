@@ -4,6 +4,7 @@
  * @var array $event
  */
 
+use yii\web\JqueryAsset;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 
@@ -35,7 +36,6 @@ use yii\helpers\Html;
         <div class="event">
             <span class="topic"><?= $event->title ?></span>
             <div class="event-preview">
-                <a href="#" class="button button-buy">Купить</a>
                 <img src="<?= $event->events_photos[0]->photo ?>">
                 <div class="event-date">
                     <?= Yii::$app->formatter->asDatetime($event->date) ?>
@@ -118,7 +118,11 @@ use yii\helpers\Html;
                         <th></th>
                         <th></th>
                         <th>
-                            <?= Html::submitButton('Купить', ['class' => 'btn btn-success']) ?>
+                            <? if (Yii::$app->user->isGuest): ?>
+                                <span class="button" style="background-color: gray;color: white">Для покупки билетов вы должны быть зарегистрированны</span>
+                            <? else: ?>
+                                <?= Html::submitButton('Купить', ['class' => 'btn btn-success']) ?>
+                            <? endif; ?>
                         </th>
                     </tr>
                     </tfoot>
@@ -126,8 +130,57 @@ use yii\helpers\Html;
                 <? $form = ActiveForm::end() ?>
             <? endif; ?>
         </div>
+        <? if (Yii::$app->user->isGuest): ?>
+            <div class="popup popup-authorization" id="popup-auth">
+                <div class="form-container">
+                    <div class="form-head"><img src="/img/key-icon_white.png" alt="key"><span>Авторизация<span></div>
+                    <? $form = ActiveForm::begin([
+                        'id' => 'form-log',
+                        'action' => 'user/log-in',
+                        'enableClientValidation' => true,
+                        'enableAjaxValidation' => true
+                    ]) ?>
+                    <div class="form-body">
+                        <?= $form->field($loginForm, 'emailnick')->textInput() ?>
+                        <?= $form->field($loginForm, 'password')->passwordInput() ?>
+                    </div>
+                    <div class="form-foot">
+                        <?= Html::submitButton('Войти', ['class' => 'button button-in']) ?>
+                        <a class="a-form" id="auth-reg">Зарегестрироваться?</a>
+                    </div>
+                    <? $form = ActiveForm::end() ?>
+                </div>
+            </div>
+            <div class="popup popup-register" id="popup-reg">
+                <div class="form-container">
+                    <div class="form-head"><img src="/img/key-icon_white.png" alt="key"><span>Регистрация<span></div>
+                    <? $form = ActiveForm::begin([
+                        'id' => 'form-reg',
+                        'action' => 'user/sign-up',
+                        'enableClientValidation' => true,
+                        'enableAjaxValidation' => true,
+                    ]) ?>
+                    <div class="form-body">
+                        <?= $form->field($signupForm, 'username')->textInput() ?>
+                        <?= $form->field($signupForm, 'email')->textInput() ?>
+                        <?= $form->field($signupForm, 'password')->passwordInput() ?>
+                        <?= $form->field($signupForm, 'password_repeat')->passwordInput() ?>
+                    </div>
+                    <div class="form-foot">
+                        <?= Html::submitButton('Зарегестрироваться', ['class' => 'button button-in']) ?>
+                        <a class="a-form" id="reg-auth">Есть аккаунт?</a>
+                    </div>
+                    <? $form = ActiveForm::end() ?>
+                </div>
+            </div>
+        <? endif; ?>
     </div>
 <?php
+if (Yii::$app->user->isGuest) {
+    $this->registerCssFile('/' . Yii::getAlias('@web') . 'css/form.css');
+    $this->registerJsFile('/' . Yii::getAlias('@web') . 'js/popup.js', ['depends' => [JqueryAsset::className()]]);
+    $this->registerJsFile('/' . Yii::getAlias('@web') . 'js/auth-reg_ajax.js', ['depends' => [JqueryAsset::className()]]);
+}
 $this->registerCssFile(Yii::getAlias('@web') . '/css/messages.css');
 $this->registerJsFile(Yii::getAlias('@web') . 'js/buy-ticket.js', ['depends' => [\yii\web\JqueryAsset::className()]]);
 ?>

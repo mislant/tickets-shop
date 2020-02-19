@@ -157,7 +157,7 @@ use yii\web\JqueryAsset;
             <div class="form-head"><img src="/img/key-icon_white.png" alt="key"><span>Авторизация<span></div>
             <? $form = ActiveForm::begin([
                 'id' => 'form-log',
-                'action' => 'user/log-in',
+                'action' => '/user/log-in',
                 'enableClientValidation' => true,
                 'enableAjaxValidation' => true
             ]) ?>
@@ -177,7 +177,7 @@ use yii\web\JqueryAsset;
             <div class="form-head"><img src="/img/key-icon_white.png" alt="key"><span>Регистрация<span></div>
             <? $form = ActiveForm::begin([
                 'id' => 'form-reg',
-                'action' => 'user/sign-up',
+                'action' => '/user/sign-up',
                 'enableClientValidation' => true,
                 'enableAjaxValidation' => true,
             ]) ?>

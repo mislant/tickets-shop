@@ -6,7 +6,7 @@ use yii\db\ActiveRecord;
 
 class Event extends ActiveRecord
 {
-    public function getEventsTickets()
+    public function getEvents_ticket()
     {
         return $this->hasMany(EventsTicket::className(), ['event_id' => 'id']);
     }
@@ -47,7 +47,7 @@ class Event extends ActiveRecord
     public static function countTotal($id)
     {
         $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
+        $events_tickets = $event->events_ticket;
         $total = 0;
         foreach ($events_tickets as $tickets) {
             $total += $tickets['amount'];
@@ -59,7 +59,7 @@ class Event extends ActiveRecord
     public static function deleteEvent($id)
     {
         $event = Event::findOne($id);
-        $events_tickets = $event->eventsTickets;
+        $events_tickets = $event->events_ticket;
         foreach ($events_tickets as $tickets) {
             $tickets->delete();
         }

@@ -12,7 +12,7 @@ use yii\helpers\Html;
         <div class="user-profile-header">
             <ul>
                 <li><?= $user->username ?></li>
-                <li><a href="/user/add-money"><i class="fas fa-wallet"></i></a>Баланс:<?= $user->wallet ?></li>
+                <li><a href="/user/add-money"><i class="fas fa-wallet"></i>+</a>Баланс:<?= $user->wallet ?></li>
             </ul>
         </div>
         <span>Билеты пользователя</span>

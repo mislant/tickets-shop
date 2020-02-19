@@ -1,5 +1,6 @@
 <?php
 
+
 namespace app\controllers;
 
 use app\models\AuthAssignment;
@@ -59,7 +60,7 @@ class   SiteController extends Controller
             $loginForm = new LoginForm();
             $signupForm = new SignupForm();
         }
-        $latestAmount = 3;
+        $latestAmount = 2;
         $latestEvents = Event::giveLatest($latestAmount);
         $soonEvents = Event::giveWillBeSoon();
         return $this->render('index', compact('signupForm', 'loginForm', 'latestEvents', 'latestAmount', 'soonEvents'));

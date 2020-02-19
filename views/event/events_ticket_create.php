@@ -27,7 +27,6 @@ use yii\widgets\ActiveForm;
         </div>
         <div class="form-buttons">
             <?= Html::submitButton('Добавить', ['class' => 'btn btn-success']) ?>
-            <?= Html:: a('Закончить', ['/event/event-details', 'id' => $model->event_id], ['class' => 'btn btn-primary']) ?>
         </div>
         <?php ActiveForm::end() ?>
     </div>

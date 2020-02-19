@@ -9,6 +9,7 @@ use app\models\EventsTicket;
 use app\models\Ticket;
 use Yii;
 use yii\base\Model;
+use yii\helpers\Html;
 use yii\web\Controller;
 use app\models\SignupForm;
 use app\models\LoginForm;
@@ -80,6 +81,11 @@ class UserController extends Controller
         }
         if (Model::loadMultiple($models, Yii::$app->request->post()) && Model::validateMultiple($models)) {
             return $this->redirect(['/event/buy-confirm', 'id' => $id, 'models' => $models]);
+        }
+        if(Yii::$app->user->isGuest){
+            $loginForm = new LoginForm();
+            $signupForm = new SignupForm();
+            return$this->render('ticket_office' , compact('event','loginForm', 'signupForm','models'));
         }
         return $this->render('ticket_office', compact('models', 'event'));
     }
